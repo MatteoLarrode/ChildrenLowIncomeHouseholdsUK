@@ -1,4 +1,4 @@
-# ---- Children in Relative Low Income Households - LA ----
+# ---- Children in Relative Low Income Households - Local Authorities ----
 library(tidyverse)
 library(httr2)
 library(readODS)

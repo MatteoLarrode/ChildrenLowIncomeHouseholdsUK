@@ -1,0 +1,13 @@
+Package: ChildrenLowIncomeHouseholdsUK
+Title: Analysis of the Effect of UK Welfare Reform on the Proportion of Children in Relative Low-Income Households
+Version: 0.0.0.9000
+Authors@R: 
+    person("Matteo", "Larrode", , "matteo.larrode.20@ucl.ac.uk", role = c("aut", "cre"))
+Description: Hosts data and script for the analysis of the effect of welfare reform in the UK since 2010. Analyses the effect of the rollout of Universal Credit with a fixed-effects model, and the effect of the Scottish Child Payment using a difference-in-differences model.
+License: AGPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Depends: 
+    R (>= 2.10)
+LazyData: true
