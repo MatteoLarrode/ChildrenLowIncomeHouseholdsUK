@@ -10,9 +10,22 @@ library(sf)
 ltla21 <- geographr::boundaries_ltla21 |> 
   st_drop_geometry()
 
+msoa21 <- geographr::boundaries_msoa21 |> 
+  st_drop_geometry()
+
+iz11 <- geographr::boundaries_iz11 |> 
+  rename(msoa21_code = iz11_code,
+         msoa21_name = iz11_name) |> 
+  st_drop_geometry()
+
+msoa <- rbind(msoa21, iz11)
+
+
 # ---- LOCAL AUTHORITIES ----
-# Source: Stat-Xplore - Children in Low Income Families > Relative Low Income
-children_low_income_wide <- read_csv("inst/extdata/children_relative_low_income_ltla_14-22.csv") |> 
+# Source: Department of Work and Pensions (DWP)
+# Stat-Xplore - Children in Low Income Families > Relative Low Income
+# Geography (residence-based) - UK > Local Authority
+children_low_income_ltla_wide <- read_csv("inst/extdata/children_relative_low_income_ltla_14-22.csv") |> 
   clean_names() |> 
   select(ltla21_name = year,
          children_low_income_hh_nbr_fye15 = x2014_15,
@@ -28,7 +41,7 @@ children_low_income_wide <- read_csv("inst/extdata/children_relative_low_income_
   left_join(ltla21) |> 
   relocate(ltla21_code, .after = ltla21_name)
 
-children_low_income_ltla <- children_low_income_wide |> 
+children_low_income_ltla <- children_low_income_ltla_wide |> 
   pivot_longer(cols = starts_with("children_low_income_hh_nbr_fye"), 
                names_to = "year", 
                values_to = "children_low_income_hh_nbr") |> 
@@ -36,6 +49,34 @@ children_low_income_ltla <- children_low_income_wide |>
          children_low_income_hh_nbr = as.numeric(children_low_income_hh_nbr))
   
 use_data(children_low_income_ltla, overwrite = TRUE)
+
+# ---- MSOA ----
+# Source: Department of Work and Pensions (DWP)
+# Stat-Xplore - Children in Low Income Families > Relative Low Income
+# Geography (residence-based) - GB > Middle Layer Super Output Area
+
+# For England & Wales --> MSOA
+# For Scotland --> Intermediate Data Zones
+children_low_income_msoa_wide <- read_csv("inst/extdata/children_relative_low_income_msoa_14-22.csv") |> 
+  clean_names() |> 
+  select(msoa21_name = year,
+         children_low_income_hh_nbr_fye15 = x2014_15,
+         children_low_income_hh_nbr_fye16 = x2015_16,
+         children_low_income_hh_nbr_fye17 = x2016_17, 
+         children_low_income_hh_nbr_fye18 = x2017_18,
+         children_low_income_hh_nbr_fye19 = x2018_19, 
+         children_low_income_hh_nbr_fye20 = x2019_20,
+         children_low_income_hh_nbr_fye21 = x2020_21, 
+         children_low_income_hh_nbr_fye22 = x2021_22_p) |> 
+  filter(!msoa21_name %in% c("National - Regional - LA - OAs (GB)", "Unknown", "Total")) |> 
+  left_join(msoa21) |> 
+  left_join(iz11, by = join_by(msoa21_name))
+
+
+  mutate(ltla21_name = str_remove(ltla21_name, "\\s*/\\s*.*$")) |> 
+  left_join(ltla21) |> 
+  relocate(ltla21_code, .after = ltla21_name)
+
 
 
 # ---- ARCHIVED CODE ----
