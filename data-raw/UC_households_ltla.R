@@ -1,4 +1,4 @@
-# ---- HOUSEHOLDS ON UNIVERSAL CREDIT ----
+# ---- HOUSEHOLDS ON UNIVERSAL CREDIT - LOCAL AUTHORITIES ----
 # NOTE: From April 2020, Changes to Universal Credit in response to the pandemic
 # For more details, check: https://www.gov.uk/government/publications/universal-credit-statistics-background-information-and-methodology/universal-credit-statistics-background-information-and-methodology
 # ---- Setup ----
@@ -13,7 +13,7 @@ ltla21 <- geographr::boundaries_ltla21 |>
   st_drop_geometry() |> 
   filter(!grepl("^N", ltla21_code))
 
-# ---- NUMBER OF HOUSEHOLDS ----
+# ---- Number of households ----
 # Source: Office for National Statistics
 # 2004 - 2019: https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/adhocs/13586estimatednumberofhouseholdsbyselectedhouseholdtypeslocalauthoritiesinenglandandwalescountiesandregionsofenglandscottishcouncilareasandgreatbritainconstituentcountries2004to2019
 # 2020: https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/adhocs/14432estimatednumberofhouseholdsingreatbritaininnuts1nuts3englishandwelshlocalauthoritiesandscottishcouncilareas2020
@@ -78,7 +78,7 @@ households_number_ltla <- households_number_ltla_04_19_raw |>
   mutate(household_number = na_ma(household_number)) |> 
   ungroup()
 
-# ---- LOCAL AUTHORITIES ----
+# ---- UC Households - Local Authorities  ----
 # Source: Department of Work and Pensions (DWP)
 # Stat-Xplore - Universal Credit > Households on Universal Credit
 # Geography (residence-based) - GB > Local Authority
