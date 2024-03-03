@@ -23,6 +23,7 @@ ltla21 <- geographr::boundaries_ltla21 |>
 # Source: Office for National Statistics
 # 2004 - 2019: https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/adhocs/13586estimatednumberofhouseholdsbyselectedhouseholdtypeslocalauthoritiesinenglandandwalescountiesandregionsofenglandscottishcouncilareasandgreatbritainconstituentcountries2004to2019
 # 2020: https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/adhocs/14432estimatednumberofhouseholdsingreatbritaininnuts1nuts3englishandwelshlocalauthoritiesandscottishcouncilareas2020
+# 2021: https://www.ons.gov.uk/datasets/TS041/editions/2021/versions/3
 url_04_19 <- "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/families/adhocs/13586estimatednumberofhouseholdsbyselectedhouseholdtypeslocalauthoritiesinenglandandwalescountiesandregionsofenglandscottishcouncilareasandgreatbritainconstituentcountries2004to2019/aps2004to2019finalv2.xlsx"
 url_20 <- "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/families/adhocs/14432estimatednumberofhouseholdsingreatbritaininnuts1nuts3englishandwelshlocalauthoritiesandscottishcouncilareas2020/hhbylanuts1nuts32020final.xlsx"
 url_21 <- "https://static.ons.gov.uk/datasets/dd43cf6b-78a2-443e-b2a1-e7e2efdc0028/TS041-2021-3-filtered-2024-03-02T19:45:27Z.xlsx#get-data"
