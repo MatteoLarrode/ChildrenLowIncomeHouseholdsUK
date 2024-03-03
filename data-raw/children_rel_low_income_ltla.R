@@ -1,4 +1,4 @@
-# ---- CHILDREN IN RELATIVE LOW INCOME HOUSEHOLDS - LOCAL AUTHORITIES ----
+# ---- CHILDREN IN RELATIVE LOW INCOME FAMILIES - LOCAL AUTHORITIES ----
 # NOTE: Local authorities (called ltla for Lower Tier Local Authorities) - 374
 # - England: English local authority districts (309)
 # - Wales: Unitary authorities (22)
@@ -19,7 +19,7 @@ ltla21 <- geographr::boundaries_ltla21 |>
   st_drop_geometry()
 
 # ---- Number of Children ----
-# For age filtering, Children in Low Income Households dataset considers 0-19
+# For age filtering, Children in Low Income Families dataset considers 0-16
 # England - Source: Office for National Statistics
 # https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/estimatesofthepopulationforenglandandwales
 url_eng_wales <- "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/estimatesofthepopulationforenglandandwales/mid2011tomid2022detailedtimeseries/myebtablesenglandwales20112022v2.xlsx"
@@ -88,7 +88,7 @@ population_0_16 <- rbind(children_pop_eng_wales, children_pop_scot) |>
   mutate(population_0_16 = na_ma(population_0_16)) |> 
   ungroup()
   
-# ---- Children in relative low income households - Local Authorities ----
+# ---- Children in relative low income families - Local Authorities ----
 # Source: Department of Work and Pensions (DWP)
 # Stat-Xplore - Children in Low Income Families > Relative Low Income
 # Geography (residence-based) - UK > Local Authority
@@ -96,14 +96,14 @@ children_low_income_ltla_wide <- read_csv("inst/extdata/children_relative_low_in
   clean_names() |>
   select(
     ltla21_name = year,
-    children_low_income_hh_abs_fye15 = x2014_15,
-    children_low_income_hh_abs_fye16 = x2015_16,
-    children_low_income_hh_abs_fye17 = x2016_17,
-    children_low_income_hh_abs_fye18 = x2017_18,
-    children_low_income_hh_abs_fye19 = x2018_19,
-    children_low_income_hh_abs_fye20 = x2019_20,
-    children_low_income_hh_abs_fye21 = x2020_21,
-    children_low_income_hh_abs_fye22 = x2021_22_p
+    children_low_income_abs_fye15 = x2014_15,
+    children_low_income_abs_fye16 = x2015_16,
+    children_low_income_abs_fye17 = x2016_17,
+    children_low_income_abs_fye18 = x2017_18,
+    children_low_income_abs_fye19 = x2018_19,
+    children_low_income_abs_fye20 = x2019_20,
+    children_low_income_abs_fye21 = x2020_21,
+    children_low_income_abs_fye22 = x2021_22_p
   ) |>
   filter(!ltla21_name %in% c("National - Regional - LA - OAs", "Unknown", "Total")) |>
   mutate(ltla21_name = str_remove(ltla21_name, "\\s*/\\s*.*$")) |>
@@ -112,16 +112,16 @@ children_low_income_ltla_wide <- read_csv("inst/extdata/children_relative_low_in
 
 children_low_income_ltla <- children_low_income_ltla_wide |>
   pivot_longer(
-    cols = starts_with("children_low_income_hh_abs_fye"),
+    cols = starts_with("children_low_income_abs_fye"),
     names_to = "year",
-    values_to = "children_low_income_hh_abs"
+    values_to = "children_low_income_abs"
   ) |>
   mutate(
     year = as.numeric(paste0("20", str_extract(year, "\\d+"))),
-    children_low_income_hh_abs = as.numeric(children_low_income_hh_abs)
+    children_low_income_abs = as.numeric(children_low_income_abs)
   ) |> 
   left_join(population_0_16) |> 
-  mutate(children_low_income_hh_perc = (children_low_income_hh_abs / population_0_16) * 100)
+  mutate(children_low_income_perc = (children_low_income_abs / population_0_16) * 100)
 
 usethis::use_data(children_low_income_ltla, overwrite = TRUE)
 

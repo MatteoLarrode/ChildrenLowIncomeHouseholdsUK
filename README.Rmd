@@ -5,9 +5,9 @@ date: "`r Sys.Date()`"
 output: md_document
 ---
 
-In this dissertation, I conduct a quantitative analysis of the effect of UK welfare policy changes on the proportion of children living in relative low-income households. 
+In this dissertation, I conduct a quantitative analysis of the effect of UK welfare policy changes on the proportion of children living in relative low-income families. 
 
-This Markdown includes the data analysis component of this dissertation. It will first include some exploratory data analysis, and then will be used to run the other components of the quantitative analysis of the impact of UK benefit policies on the number of children living in relative low income. 
+This Markdown includes the data analysis component of this dissertation. It will first include some exploratory data analysis, and then will be used to run the other components of the quantitative analysis of the impact of UK benefit policies on the number of children living in relative low income families. 
 
 Note that the collection and cleaning of the data that will be used here is done in scripts in the `data-raw` folder of this repository, and the datasets are available in the `data` folder. 
 
@@ -23,15 +23,25 @@ library(tidyverse)
 
 ## Data
 
-### Outcome: Children Living in Low Income Households
+### Outcome: Children Living in Relative Low Income Families
+
+Data is downloaded from [Stat-Xplore](https://stat-xplore.dwp.gov.uk/webapi/jsf/login.xhtml), the Department of Work and Pensions (DWP) data distribution platform.
+
+- Low income is a family whose equivalised income is below 60 per cent of median household incomes. For Absolute low income involves, the median of the 2010/11 year is used. For Relative low income, the comparison is made to the median of the current year. This dissertation focuses on Relative low income because it better adjusts for economic changes. Relative income is Before Housing Costs (BHC) and includes contributions from earning, state support and pensions. Equivalisation adjusts incomes for household size and composition.
+
+- A family must have claimed Child Benefit and at least one other household benefit (Universal Credit, tax credits or Housing Benefit) at any point in the year to be classed as low income in these statistics
+
+- Children are defined as dependent individuals aged under 16; or aged 16 to 19 in full-time non-advanced education. 
+
+To get the **proportion** of children in low income families, I used [yearly population estimates](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/estimatesofthepopulationforenglandandwales) provided by the Office for National Statistics (for England and Wales), and [time series data](https://www.nrscotland.gov.uk/statistics-and-data/statistics/statistics-by-theme/population/population-estimates/mid-year-population-estimates/population-estimates-time-series-data) from the National Records of Scotland. Because not all individuals aged 16 to 19 years old are counted as children in the CiRLIF measure, population counts are summed for individuals aged 0-15 years old.
+
+Visit the dedicated [DWP page](https://www.gov.uk/government/publications/children-in-low-income-families-local-area-statistics-background-information-and-methodology/background-information-and-methodology-children-in-low-income-families-local-area-statistics) for further information. 
 
 **Geography: Local authorities (called ltla for Lower Tier Local Authorities)**
 - England: English local authority districts (309)
 - Wales: Unitary authorities (22)
 - Scotland: Scottish council areas (32)
 - Northern Ireland: District council areas (11)
-
-Visit the dedicated [DWP page](https://www.gov.uk/government/publications/children-in-low-income-families-local-area-statistics-background-information-and-methodology/background-information-and-methodology-children-in-low-income-families-local-area-statistics) for more information on the methodology. 
 
 ### Independent Variable 1: Households on Universal Credit
 
@@ -41,10 +51,10 @@ Visit the dedicated [DWP page](https://www.gov.uk/government/publications/childr
 - Scotland: Scottish council areas (32)
 - **Data for Northern Ireland not available**
 
+Data is downloaded from [Stat-Xplore](https://stat-xplore.dwp.gov.uk/webapi/jsf/login.xhtml), the Department of Work and Pensions (DWP) data distribution platform.
 
 
-
-##  I) Relationship between households on UC and children in low income households
+##  I) Relationship between households on UC and children in low income families
 
 I start with an examination of the relationship between the rollout of Universal Credit, more precisely the proportion of households on Universal Credit, and the proportion of children living in low income household. 
 
@@ -56,8 +66,8 @@ data("children_low_income_ltla")
 
 UC_Children_df <- UC_households_ltla |>
   left_join(children_low_income_ltla) |>
-  select(ltla21_code, ltla21_name, year, UC_households_perc, children_low_income_hh_perc) |> 
-  filter(!is.na(UC_households_perc) & !is.na(children_low_income_hh_perc))
+  select(ltla21_code, ltla21_name, year, UC_households_perc, children_low_income_perc) |> 
+  filter(!is.na(UC_households_perc) & !is.na(children_low_income_perc))
 
 print(paste0("Number of unique local authorities: ", length(unique(UC_Children_df$ltla21_code))))
 
@@ -70,9 +80,9 @@ There is data for a total of 340 local authorities covering 2016 to 2022, leadin
 summary_statistics <- UC_Children_df |> 
   group_by(year) |> 
   summarise(
-    median_children_low_income = median(children_low_income_hh_perc),
-    lower_IQR_children_low_income = quantile(children_low_income_hh_perc, 0.25),
-    upper_IQR_children_low_income = quantile(children_low_income_hh_perc, 0.75)
+    median_children_low_income = median(children_low_income_perc),
+    lower_IQR_children_low_income = quantile(children_low_income_perc, 0.25),
+    upper_IQR_children_low_income = quantile(children_low_income_perc, 0.75)
   )
 
 print(summary_statistics)
@@ -89,7 +99,7 @@ The first question is: is this rise in child poverty in some parts of the UK con
 UC_Children_2017_df <- UC_Children_df |>
   filter(year == 2017)
 
-ggplot(UC_Children_2017_df, aes(x = UC_households_perc, y = children_low_income_hh_perc)) +
+ggplot(UC_Children_2017_df, aes(x = UC_households_perc, y = children_low_income_perc)) +
   geom_point()
 ```
 
@@ -98,6 +108,6 @@ Figure 1 is a binned scatterplot of the proportion of households claiming Univer
 ### Regression Models 
 
 ```{r}
-UC_Children_model <- lm(data = UC_Children_df, children_low_income_hh_perc ~ UC_households_perc)
+UC_Children_model <- lm(data = UC_Children_df, children_low_income_perc ~ UC_households_perc)
 summary(UC_Children_model)
 ```
