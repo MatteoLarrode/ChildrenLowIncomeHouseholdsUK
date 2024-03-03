@@ -1,6 +1,12 @@
 # ---- HOUSEHOLDS ON UNIVERSAL CREDIT - LOCAL AUTHORITIES ----
-# NOTE: From April 2020, Changes to Universal Credit in response to the pandemic
+# NOTE 1: From April 2020, Changes to Universal Credit in response to the pandemic
 # For more details, check: https://www.gov.uk/government/publications/universal-credit-statistics-background-information-and-methodology/universal-credit-statistics-background-information-and-methodology
+
+# NOTE 2: Local authorities (called ltla for Lower Tier Local Authorities) - 374
+# - England: English local authority districts (309)
+# - Wales: Unitary authorities (22)
+# - Scotland: Scottish council areas (32)
+# - Northern Ireland: District council areas (11)
 # ---- Setup ----
 library(tidyverse)
 library(janitor)
@@ -10,8 +16,7 @@ library(readxl)
 library(imputeTS)
 
 ltla21 <- geographr::boundaries_ltla21 |> 
-  st_drop_geometry() |> 
-  filter(!grepl("^N", ltla21_code))
+  st_drop_geometry()
 
 # ---- Number of households ----
 # Source: Office for National Statistics
