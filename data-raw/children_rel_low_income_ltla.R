@@ -36,23 +36,23 @@ population_raw_eng_wales <- read_excel(
 )
 
 children_pop_eng_wales <- population_raw_eng_wales |>
-  filter(age <= 19) |>
+  filter(age < 16) |>
   group_by(ladcode21) |>
   summarise(
-    population_0_19_2015 = sum(population_2015),
-    population_0_19_2016 = sum(population_2016),
-    population_0_19_2017 = sum(population_2017),
-    population_0_19_2018 = sum(population_2018),
-    population_0_19_2019 = sum(population_2019),
-    population_0_19_2020 = sum(population_2020),
-    population_0_19_2021 = sum(population_2021),
-    population_0_19_2022 = sum(population_2022)
+    population_0_16_2015 = sum(population_2015),
+    population_0_16_2016 = sum(population_2016),
+    population_0_16_2017 = sum(population_2017),
+    population_0_16_2018 = sum(population_2018),
+    population_0_16_2019 = sum(population_2019),
+    population_0_16_2020 = sum(population_2020),
+    population_0_16_2021 = sum(population_2021),
+    population_0_16_2022 = sum(population_2022)
   ) |>
   rename(ltla21_code = ladcode21) |>
   pivot_longer(
-    cols = starts_with("population_0_19"),
+    cols = starts_with("population_0_16"),
     names_to = "year",
-    values_to = "population_0_19"
+    values_to = "population_0_16"
   ) |>
   mutate(year = as.numeric(str_extract(year, "\\d{4}")))
 
@@ -75,17 +75,17 @@ population_raw_scot <- read_excel(
 children_pop_scot <- population_raw_scot |> 
   filter(between(year, 2015, 2022) & sex == "Persons") |> 
   rowwise() |> 
-  mutate(population_0_19 = sum(c_across(x0:x19))) |> 
+  mutate(population_0_16 = sum(c_across(x0:x16))) |> 
   select(ltla21_code = area_code,
          year,
-         population_0_19) |> 
+         population_0_16) |> 
   filter(ltla21_code != "S92000003")
 
 # Final children population dataset (and impute for Scotland 2022)
-population_0_19 <- rbind(children_pop_eng_wales, children_pop_scot) |> 
-  complete(ltla21_code, year, fill = list(population_0_19 = NA)) |> 
+population_0_16 <- rbind(children_pop_eng_wales, children_pop_scot) |> 
+  complete(ltla21_code, year, fill = list(population_0_16 = NA)) |> 
   group_by(ltla21_code) |> 
-  mutate(population_0_19 = na_ma(population_0_19)) |> 
+  mutate(population_0_16 = na_ma(population_0_16)) |> 
   ungroup()
   
 # ---- Children in relative low income households - Local Authorities ----
@@ -120,43 +120,43 @@ children_low_income_ltla <- children_low_income_ltla_wide |>
     year = as.numeric(paste0("20", str_extract(year, "\\d+"))),
     children_low_income_hh_abs = as.numeric(children_low_income_hh_abs)
   ) |> 
-  left_join(population_0_19) |> 
-  mutate(children_low_income_hh_perc = (children_low_income_hh_abs / population_0_19) * 100)
+  left_join(population_0_16) |> 
+  mutate(children_low_income_hh_perc = (children_low_income_hh_abs / population_0_16) * 100)
 
 usethis::use_data(children_low_income_ltla, overwrite = TRUE)
 
 # ---- ARCHIVED CODE ----
 # Download data
 # Source: https://www.gov.uk/government/collections/children-in-low-income-families-local-area-statistics
-url <- "https://assets.publishing.service.gov.uk/media/641c5cdb5155a200136ad550/children-in-low-income-families-local-area-statistics-2014-to-2022.ods"
-
-download <- tempfile(fileext = ".ods")
-
-request(url) |>
-  req_progress() |>
-  req_perform(download)
-
-children_rel_low_income_ltla_raw <-
-  read_ods(
-    download,
-    sheet = "3_Relative_Local_Authority",
-    range = "A10:R385"
-  ) |>
-  clean_names()
-
-# Clean data
-children_rel_low_income_ltla <- children_rel_low_income_ltla_raw |>
-  # select only percentages of children living in low income families
-  select(
-    ltla21_name = local_authority_note_2,
-    ltla21_code = area_code,
-    children_perc_fye15 = percentage_of_children_fye_2015_note_3,
-    children_perc_fye16 = percentage_of_children_fye_2016_note_3,
-    children_perc_fye17 = percentage_of_children_fye_2017_note_3,
-    children_perc_fye18 = percentage_of_children_fye_2018_note_3,
-    children_perc_fye19 = percentage_of_children_fye_2019_note_3,
-    children_perc_fye20 = percentage_of_children_fye_2020_note_3,
-    children_perc_fye21 = percentage_of_children_fye_2021_note_3,
-    children_perc_fye22 = percentage_of_children_fye_2022_p_note_3,
-  ) |>
-  filter(ltla21_code != "K02000001")
+# url <- "https://assets.publishing.service.gov.uk/media/641c5cdb5155a200136ad550/children-in-low-income-families-local-area-statistics-2014-to-2022.ods"
+# 
+# download <- tempfile(fileext = ".ods")
+# 
+# request(url) |>
+#   req_progress() |>
+#   req_perform(download)
+# 
+# children_rel_low_income_ltla_raw <-
+#   read_ods(
+#     download,
+#     sheet = "3_Relative_Local_Authority",
+#     range = "A10:R385"
+#   ) |>
+#   clean_names()
+# 
+# # Clean data
+# children_rel_low_income_ltla <- children_rel_low_income_ltla_raw |>
+#   # select only percentages of children living in low income families
+#   select(
+#     ltla21_name = local_authority_note_2,
+#     ltla21_code = area_code,
+#     children_perc_fye15 = percentage_of_children_fye_2015_note_3,
+#     children_perc_fye16 = percentage_of_children_fye_2016_note_3,
+#     children_perc_fye17 = percentage_of_children_fye_2017_note_3,
+#     children_perc_fye18 = percentage_of_children_fye_2018_note_3,
+#     children_perc_fye19 = percentage_of_children_fye_2019_note_3,
+#     children_perc_fye20 = percentage_of_children_fye_2020_note_3,
+#     children_perc_fye21 = percentage_of_children_fye_2021_note_3,
+#     children_perc_fye22 = percentage_of_children_fye_2022_p_note_3,
+#   ) |>
+#   filter(ltla21_code != "K02000001")

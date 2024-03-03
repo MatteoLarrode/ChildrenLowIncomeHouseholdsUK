@@ -14,6 +14,7 @@ library(geographr)
 library(sf)
 library(readxl)
 library(imputeTS)
+library(httr2)
 
 ltla21 <- geographr::boundaries_ltla21 |> 
   st_drop_geometry()
@@ -95,7 +96,7 @@ UC_households_ltla_wide <- read_csv("inst/extdata/households_on_UC_ltla_15-22.cs
   mutate(ltla21_name = str_remove(ltla21_name, "\\s*/\\s*.*$")) |> 
   mutate_at(vars(-ltla21_name), ~as.numeric(ifelse(. == "..", 0, .))) |> 
   left_join(ltla21) |>
-  relocate(ltla21_code, .after = ltla21_name) |> 
+  relocate(ltla21_code, .before = ltla21_name) |> 
   filter(!is.na(ltla21_code))
 
 # Financial Year ends on April 5th of each year: we use the number of 

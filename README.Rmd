@@ -1,0 +1,74 @@
+---
+title: "The Effects of Welfare Reform on Child Poverty in the UK"
+author: "Matteo Larrode"
+date: "`r Sys.Date()`"
+output: md_document
+---
+
+In this dissertation, I conduct a quantitative analysis of the effect of UK welfare policy changes on the proportion of children living in relative low-income households. 
+
+This Markdown includes the data analysis component of this dissertation. It will first include some exploratory data analysis, and then will be used to run the other components of the quantitative analysis of the impact of UK benefit policies on the number of children living in relative low income. 
+
+Note that the collection and cleaning of the data that will be used here is done in scripts in the `data-raw` folder of this repository, and the datasets are available in the `data` folder. 
+
+### Setup
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r package-loading, message=FALSE}
+library(tidyverse)
+
+# pkgload::load_all(".")
+```
+
+##  I) Relationship between households on UC and children in low income households
+
+We start by examining the relationship between the rollout of Universal Credit, more precisely the proportion of households on Universal Credit, and the proportion of children living in low income household. 
+
+A little bit more information on the variables at hand now.
+
+#### Households on Universal Credit
+
+
+**Geography: Local authorities (called ltla for Lower Tier Local Authorities)**
+- England: English local authority districts (309)
+- Wales: Unitary authorities (22)
+- Scotland: Scottish council areas (32)
+- **Data for Northern Ireland not available**
+
+
+
+#### Children Living in Low Income Households
+
+**Geography: Local authorities (called ltla for Lower Tier Local Authorities)**
+- England: English local authority districts (309)
+- Wales: Unitary authorities (22)
+- Scotland: Scottish council areas (32)
+- Northern Ireland: District council areas (11)
+
+
+
+
+Visit the dedicated [DWP page](https://www.gov.uk/government/publications/children-in-low-income-families-local-area-statistics-background-information-and-methodology/background-information-and-methodology-children-in-low-income-families-local-area-statistics) for more information on the methodology. 
+
+
+We start by joining the datasets of households on UC and children living in low income, on local authority and year.
+
+```{r message=FALSE}
+data("UC_households_ltla")
+data("children_low_income_ltla")
+
+UC_Children_df <- UC_households_ltla |>
+  left_join(children_low_income_ltla) |>
+  select(ltla21_code, ltla21_name, year, UC_households_perc, children_low_income_hh_perc) |> 
+  filter(!is.na(UC_households_perc) & !is.na(children_low_income_hh_perc))
+
+print(paste0("Number of unique local authorities: ", length(unique(UC_Children_df$ltla21_code))))
+
+head(UC_Children_df, 10)
+```
+
+There is data for a total of 340 local authorities covering 2016 to 2022, leading to 2380 observations across England, Wales and Scotland.
+
