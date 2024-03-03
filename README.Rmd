@@ -69,6 +69,42 @@ print(paste0("Number of unique local authorities: ", length(unique(UC_Children_d
 
 head(UC_Children_df, 10)
 ```
-
 There is data for a total of 340 local authorities covering 2016 to 2022, leading to 2380 observations across England, Wales and Scotland.
 
+### Initial observation
+```{r}
+summary_statistics <- UC_Children_df %>%
+  group_by(year) %>%
+  summarise(
+    median_children_low_income = median(children_low_income_hh_perc),
+    lower_IQR_children_low_income = quantile(children_low_income_hh_perc, 0.25),
+    upper_IQR_children_low_income = quantile(children_low_income_hh_perc, 0.75)
+  )
+
+print(summary_statistics)
+
+```
+
+
+### Scatterplot
+
+**Figure 1. Binned scatterplot of the proportion of household claiming UC and proportion of children living in relative low income households across local authorities (2017)**
+
+```{r}
+UC_Children_2017_df <- UC_Children_df |>
+  filter(year == 2017)
+
+ggplot(UC_Children_2017_df, aes(x = UC_households_perc, y = children_low_income_hh_perc)) +
+  geom_point()
+```
+
+Figure 1 is a binned scatterplot of the proportion of households claiming Universal Credit (x-axis) and the proportion children living in low income households in 2017. It suggests a strong positive relationship across local authorities. Of course, this correlation could be driven by underlying characteristics of the local authorities. (Reeves & Loopstra, 2021: 9)
+
+
+### Regression Models 
+
+```{r}
+UC_Children_model <- lm(data = UC_Children_df, children_low_income_hh_perc ~ UC_households_perc)
+summary(UC_Children_model)
+
+```
