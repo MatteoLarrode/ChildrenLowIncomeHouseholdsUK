@@ -16,6 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r package-loading, include=FALSE}
 library(tidyverse)
+library(fixest)
 
 # pkgload::load_all(".")
 ```
@@ -72,20 +73,20 @@ I join the datasets of households on UC and children living in low income, on lo
 data("children_low_income_ltla")
 data("UC_households_ltla")
 
-UC_Children_df <- UC_households_ltla |>
+uc_children_df <- UC_households_ltla |>
   left_join(children_low_income_ltla) |>
   select(ltla21_code, ltla21_name, year, UC_households_perc, children_low_income_perc) |> 
   filter(!is.na(UC_households_perc) & !is.na(children_low_income_perc))
 
-print(paste0("Number of unique local authorities: ", length(unique(UC_Children_df$ltla21_code))))
+print(paste0("Number of unique local authorities: ", length(unique(uc_children_df$ltla21_code))))
 
-head(UC_Children_df, 10)
+head(uc_children_df, 10)
 ```
 There is data for a total of 340 local authorities covering 2016 to 2022, leading to 2380 observations across England, Wales and Scotland.
 
 ### Initial observation
 ```{r}
-summary_statistics <- UC_Children_df |> 
+summary_statistics <- uc_children_df |> 
   group_by(year) |> 
   summarise(
     median_children_low_income = median(children_low_income_perc),
@@ -104,18 +105,33 @@ The first question is: is this rise in child poverty in some parts of the UK con
 **Figure 1. Binned scatterplot of the proportion of household claiming UC and proportion of children living in relative low income households across local authorities (2017)**
 
 ```{r}
-UC_Children_2017_df <- UC_Children_df |>
+uc_children_2017_df <- uc_children_df |>
   filter(year == 2017)
 
-ggplot(UC_Children_2017_df, aes(x = UC_households_perc, y = children_low_income_perc)) +
+ggplot(uc_children_2017_df, aes(x = UC_households_perc, y = children_low_income_perc)) +
   geom_point()
 ```
 
-Figure 1 is a binned scatterplot of the proportion of households claiming Universal Credit (x-axis) and the proportion children living in low income households in 2017. It suggests a strong positive relationship across local authorities. Of course, this correlation could be driven by underlying characteristics of the local authorities. (Reeves & Loopstra, 2021: 9)
+Figure 1 is a binned scatterplot of the proportion of households claiming Universal Credit (x-axis) and the proportion of children living in low income families in 2017. It suggests a strong positive relationship across local authorities. Of course, this correlation could be driven by underlying characteristics of the local authorities. (Reeves & Loopstra, 2021: 9)
 
-### Regression Models 
+### Fixed-Effects Model
+
+A first baseline fixed effects (time and space) model allows to explore whether this relationship remains even after controlling for time-invariant local authority characteristics and time trends.
+
+*Note: Standard errors are clustered for repeated observations within local authorities.*
 
 ```{r}
-UC_Children_model <- lm(data = UC_Children_df, children_low_income_perc ~ UC_households_perc)
-summary(UC_Children_model)
+uc_children_fem <- 
+  feols(data = uc_children_df, 
+        children_low_income_perc ~ UC_households_perc | ltla21_code + year,
+        cluster = ~ltla21_code)
+
+summary(uc_children_fem)
 ```
+
+The results of this first model show that for every 1 percentage point increase in households receiving UC, there is a 0.138 percentage point increase in the proportion of children living in low income families. This relationship is statistically significant at all conventional thresholds. 
+
+**Important notes**:
+
+1. It would be benefiticial to control for potentially time varying local authority characteristics such as unemployment. More data collection is necessary for that.
+2. The key assumption needed for a valid estimation of a causal effect with this fixed-effects model is the parallel trends assumption. That is local authorities which have **not** displayed an increase in UC caseload would have seen the same change in the proportion of children living in low income families as local authorities which have indeed displayed an increase in proportion of households on UC. This assumption needs to be studied further.
