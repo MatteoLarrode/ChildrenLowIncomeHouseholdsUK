@@ -133,5 +133,5 @@ The results of this first model show that for every 1 percentage point increase 
 
 **Important notes**:
 
-1. It would be benefiticial to control for potentially time varying local authority characteristics such as unemployment. More data collection is necessary for that.
-2. The key assumption needed for a valid estimation of a causal effect with this fixed-effects model is the parallel trends assumption. That is local authorities which have **not** displayed an increase in UC caseload would have seen the same change in the proportion of children living in low income families as local authorities which have indeed displayed an increase in proportion of households on UC. This assumption needs to be studied further.
+1. The key assumption needed for a valid estimation of a causal effect with this fixed-effects model is the parallel trends assumption. That is, local authorities which have **not** displayed an increase in UC caseload would have seen the same change in the proportion of children living in low income families as local authorities which have indeed displayed an increase in proportion of households on UC. This assumption needs to be studied further.
+2. It would be benefiticial to control for potentially time varying local authority characteristics such as unemployment. This would make the parallel trends assumption more plausible. More data collection is necessary for that.

@@ -110,16 +110,16 @@ income, on local authority and year.
     data("children_low_income_ltla")
     data("UC_households_ltla")
 
-    UC_Children_df <- UC_households_ltla |>
+    uc_children_df <- UC_households_ltla |>
       left_join(children_low_income_ltla) |>
       select(ltla21_code, ltla21_name, year, UC_households_perc, children_low_income_perc) |> 
       filter(!is.na(UC_households_perc) & !is.na(children_low_income_perc))
 
-    print(paste0("Number of unique local authorities: ", length(unique(UC_Children_df$ltla21_code))))
+    print(paste0("Number of unique local authorities: ", length(unique(uc_children_df$ltla21_code))))
 
     ## [1] "Number of unique local authorities: 340"
 
-    head(UC_Children_df, 10)
+    head(uc_children_df, 10)
 
     ## # A tibble: 10 × 5
     ##    ltla21_code ltla21_name    year UC_households_perc children_low_income_perc
@@ -140,7 +140,7 @@ There is data for a total of 340 local authorities covering 2016 to
 
 ### Initial observation
 
-    summary_statistics <- UC_Children_df |> 
+    summary_statistics <- uc_children_df |> 
       group_by(year) |> 
       summarise(
         median_children_low_income = median(children_low_income_perc),
@@ -174,41 +174,64 @@ people are claiming UC?
 UC and proportion of children living in relative low income households
 across local authorities (2017)**
 
-    UC_Children_2017_df <- UC_Children_df |>
+    uc_children_2017_df <- uc_children_df |>
       filter(year == 2017)
 
-    ggplot(UC_Children_2017_df, aes(x = UC_households_perc, y = children_low_income_perc)) +
+    ggplot(uc_children_2017_df, aes(x = UC_households_perc, y = children_low_income_perc)) +
       geom_point()
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-3-1.png)
 
 Figure 1 is a binned scatterplot of the proportion of households
-claiming Universal Credit (x-axis) and the proportion children living in
-low income households in 2017. It suggests a strong positive
+claiming Universal Credit (x-axis) and the proportion of children living
+in low income families in 2017. It suggests a strong positive
 relationship across local authorities. Of course, this correlation could
 be driven by underlying characteristics of the local authorities.
 (Reeves & Loopstra, 2021: 9)
 
-### Regression Models
+### Fixed-Effects Model
 
-    UC_Children_model <- lm(data = UC_Children_df, children_low_income_perc ~ UC_households_perc)
-    summary(UC_Children_model)
+A first baseline fixed effects (time and space) model allows to explore
+whether this relationship remains even after controlling for
+time-invariant local authority characteristics and time trends.
 
-    ## 
-    ## Call:
-    ## lm(formula = children_low_income_perc ~ UC_households_perc, data = UC_Children_df)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -14.912  -5.272  -0.790   4.050  32.273 
-    ## 
-    ## Coefficients:
-    ##                    Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)        17.27001    0.20567   83.97   <2e-16 ***
-    ## UC_households_perc  0.45069    0.01942   23.21   <2e-16 ***
+*Note: Standard errors are clustered for repeated observations within
+local authorities.*
+
+    uc_children_fem <- 
+      feols(data = uc_children_df, 
+            children_low_income_perc ~ UC_households_perc | ltla21_code + year,
+            cluster = ~ltla21_code)
+
+    summary(uc_children_fem)
+
+    ## OLS estimation, Dep. Var.: children_low_income_perc
+    ## Observations: 2,380 
+    ## Fixed-effects: ltla21_code: 340,  year: 7
+    ## Standard-errors: Clustered (ltla21_code) 
+    ##                    Estimate Std. Error t value   Pr(>|t|)    
+    ## UC_households_perc 0.137705   0.026661 5.16513 4.1074e-07 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 6.968 on 2378 degrees of freedom
-    ## Multiple R-squared:  0.1847, Adjusted R-squared:  0.1844 
-    ## F-statistic: 538.7 on 1 and 2378 DF,  p-value: < 2.2e-16
+    ## RMSE: 1.97767     Adj. R2: 0.923087
+    ##                 Within R2: 0.025308
+
+The results of this first model show that for every 1 percentage point
+increase in households receiving UC, there is a 0.138 percentage point
+increase in the proportion of children living in low income families.
+This relationship is statistically significant at all conventional
+thresholds.
+
+**Important notes**:
+
+1.  The key assumption needed for a valid estimation of a causal effect
+    with this fixed-effects model is the parallel trends assumption.
+    That is, local authorities which have **not** displayed an increase
+    in UC caseload would have seen the same change in the proportion of
+    children living in low income families as local authorities which
+    have indeed displayed an increase in proportion of households on UC.
+    This assumption needs to be studied further.
+2.  It would be benefiticial to control for potentially time varying
+    local authority characteristics such as unemployment. This would
+    make the parallel trends assumption more plausible. More data
+    collection is necessary for that.
