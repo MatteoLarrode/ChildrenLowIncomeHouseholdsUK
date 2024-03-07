@@ -274,6 +274,65 @@ thresholds.
     make the parallel trends assumption more plausible. More data
     collection is necessary for that.
 
-### Fixed-Effects Model - Binary Independent Variable
+## Next steps
 
-Getting data from the Universal Credit
+### Add time-varying controls to fixed-effects model
+
+-   Research on drivers of child poverty needed
+    -   unemployment rate
+    -   nth percentile of wages
+
+### Fixed-Effects Model - Binary Independent Variable (UC Full Service Rollout)
+
+-   Need to decide month threshold for ‘yes’
+    -   e.g. FYE 2018 (April 2017 - March 2018): when do I start
+        considering UC was rolled out for this year?
+
+### Fixed-Effects Model - Categorical Variable: Long-term effects of UC Full Service Rollout
+
+-   How to count number of months from rollout to reference year
+    -   e.g. FYE 2018 (April 2017 - March 2018): if UC has been rolled
+        out in December 2016, how many months are counted for FYE 2018?
+
+### Scottish Child Payment
+
+“On 15 February 2021 we introduced the Scottish Child Payment for
+low-income families with children under six as part of our work on
+tackling child poverty. It was initially set at a rate of £10 per week
+per child with no limit to the number of eligible children.
+
+In March 2022 we published “Best Start, Bright Futures: tackling child
+poverty delivery plan 2022 to 2026” in which we committed to doubling
+the value of the Scottish Child Payment from April 2022, delivering the
+benefit in full to all eligible children under the age of 16 and further
+increasing the value to £25 per child, per week, by the end of 2022.
+These commitments were delivered on 14 November 2022.”
+(<https://www.gov.scot/policies/social-security/scottish-child-payment/>)
+
+-   MSOA level children living in low income families for Scotland and
+    England
+    -   difference in differences for pre-2021 and 2021-2022
+    -   with matching on UC takeup, unemployment & pre-treatment outcome
+
+### Two-Child Limit in Universal Credit
+
+-   Households with a third or subsequent child born from 6 April 2017
+    claiming Universal Credit or Child Tax Credit no longer receive
+    additional amounts for these children. The policy only applies to
+    children born from 6 April 2017, so not all families with a third or
+    subsequent child claiming Universal Credit will be affected until
+    the mid-2030s. In April 2023, the two-child limit affected 422,000
+    (55%) of the 772,000 families with three or more children claiming
+    Universal Credit or Child Tax Credit. 22,000 households had an
+    exception.
+
+-   Initial results: Relative poverty among families with three or more
+    children, which has been rising since 2013, has continued to
+    increase since April 2017. The Government points to falling absolute
+    poverty over the period and questions the use of relative poverty
+    measures.
+
+-   More research needed (Patrick et al, 2023)
+
+-   Possibility of quasi-experimental research? Data on number of
+    children living in low income by age available.
