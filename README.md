@@ -97,6 +97,44 @@ Authorities)**
     is made available by the Northern Ireland Department for
     Communities, but not yet collected in this package*
 
+The official [UC ‘Full Service’ transition rollout
+schedule](https://assets.publishing.service.gov.uk/media/5ab507c8e5274a1aa2d414d1/universal-credit-transition-rollout-schedule.pdf)
+published by the DWP was used to create explanatory variables measuring
+cross-local authority variation in the timing of the UC rollout (Hardie,
+2023: 1035). The first is a binary variable indicating whether UC ‘Full
+Service’ had rolled out yet in each year in each local authority in the
+sample (coded: 0 = ‘no’, 1 = ‘yes’). This first binary variable allows
+to study the staggered rollout of UC as a natural experiment, with a
+delayed treatment across local authorities.
+
+**Include note on how month was converted to year**
+
+“The rollout of the ‘Full Service’ version of UC was selected as this is
+the full version of UC that meant UC became available to all claimant
+types including those with housing costs.” The earlier ‘Live Service’
+version was not examined as it is unlikely to have affected children
+living in low income families as it only involved a small number of
+claims from those who were single, unemployed and not claiming housing
+costs” (Hardie, 2023: 1035).
+
+If a significant effect of the rollout on children living in low income
+families in indeed observed, this effect could be expected to vary
+depending on how long UC has been rollout out in the local authority.
+One possible scenario is that the effect fades over time because the
+administrative system adapts. Conversely, as time goes on, more people
+are reached by Universal Credit, and the effect on children in low
+income families could become larger. For the purpose of studying the
+long-term effect of the rollout, we build a secondary independent
+variable ‘UC Full Service Rollout by Rollout Length’; a categorical
+variable indicating whether UC ‘Full Service’ had rolled out yet in each
+month in each local authority , and if so for how long (coded: 0 = ‘No
+(pre-rollout)’ 1 = ‘Yes (1-6 months post)’, 2 = ‘Yes (7-12 months
+post)’, 3 = ‘Yes (13-24 months post)’, and 4 = ‘Yes(25+ months post)’)
+(Hardie, 2023: 1035). The proportion of children in low income families
+is measured for a financial year, so the number of months is measured
+from the month of the rollout to the middle of the financial year
+(October).
+
 ## I) Relationship Between Households on UC and Children in Low Income Families
 
 I start with an examination of the relationship between the rollout of
@@ -189,7 +227,7 @@ relationship across local authorities. Of course, this correlation could
 be driven by underlying characteristics of the local authorities.
 (Reeves & Loopstra, 2021: 9)
 
-### Fixed-Effects Model
+### Fixed-Effects Model - Continuous Independent Variable
 
 A first baseline fixed effects (time and space) model allows to explore
 whether this relationship remains even after controlling for
@@ -235,3 +273,7 @@ thresholds.
     local authority characteristics such as unemployment. This would
     make the parallel trends assumption more plausible. More data
     collection is necessary for that.
+
+### Fixed-Effects Model - Binary Independent Variable
+
+Getting data from the Universal Credit
