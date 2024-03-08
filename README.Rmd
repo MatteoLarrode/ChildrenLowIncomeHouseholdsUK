@@ -63,11 +63,13 @@ To calculate the proportion of households on Universal Credit for each local aut
 - Scotland: Scottish council areas (32)
 - *[Data for Northern Ireland](https://www.communities-ni.gov.uk/articles/universal-credit-statistics) is made available by the Northern Ireland Department for Communities, but not yet collected in this package*
 
-The official [UC 'Full Service' transition rollout schedule](https://assets.publishing.service.gov.uk/media/5ab507c8e5274a1aa2d414d1/universal-credit-transition-rollout-schedule.pdf) published by the DWP was used to create explanatory variables measuring cross-local authority variation in the timing of the UC rollout (Hardie, 2023: 1035). The first is a binary variable indicating whether UC ‘Full Service’ had rolled out yet in each year in each local authority in the sample (coded: 0 = ‘no', 1 = ‘yes’). This first binary variable allows to study the staggered rollout of UC as a natural experiment, with a delayed treatment across local authorities. 
+#### Universal Credit Rollout: Binary variable
 
-**Include note on how month was converted to year**
+The official [UC 'Full Service' transition rollout schedule](https://assets.publishing.service.gov.uk/media/5ab507c8e5274a1aa2d414d1/universal-credit-transition-rollout-schedule.pdf) published by the DWP was used to create explanatory variables measuring cross-local authority variation in the timing of the UC rollout (Hardie, 2023: 1035). The first is a binary variable indicating whether UC ‘Full Service’ had rolled out yet in each year in each local authority in the sample (coded: 0 = ‘no', 1 = ‘yes’). To mitigate bias and ensure robustness in the conversion of the monthly Universal Credit rollout data to annual data for the analysis, I coded multiple variables with different thresholds — December of the previous year, April, and October — to determine the minimum duration of Universal Credit presence within a financial year required for a local authority to be classified as having implemented UC. This first binary variable allows to study the staggered rollout of UC as a natural experiment, with a delayed treatment across local authorities.
 
-"The rollout of the ‘Full Service’ version of UC was selected as this is the full version of UC that meant UC became available to all claimant types including those with housing costs." The earlier ‘Live Service’ version was not examined as it is unlikely to have affected children living in low income families as it only involved a small number of claims from those who were single, unemployed and not claiming housing costs" (Hardie, 2023: 1035). 
+The 'Full Service' iteration of Universal Credit was chosen for analysis because it represents the comprehensive form of UC, making it accessible to all types of claimants, including those with housing expenses. The initial 'Live Service' variant was not considered in this study due to its limited scope, primarily involving claims from single, unemployed individuals without housing cost claims, thereby having minimal impact on children from low-income families. (Hardie, 2023: 1035). 
+
+#### Universal Credit Rollout Duration: Categorical variable
 
 If a significant effect of the rollout on children living in low income families in indeed observed, this effect could be expected to vary depending on how long UC has been rollout out in the local authority. One possible scenario is that the effect fades over time because the administrative system adapts. Conversely, as time goes on, more people are reached by Universal Credit, and the effect on children in low income families could become larger. For the purpose of studying the long-term effect of the rollout, we build a secondary independent variable ‘UC Full Service Rollout by Rollout Length’; a categorical variable indicating whether UC ‘Full Service’ had rolled out yet in each month in each local authority , and if so for how long (coded: 0 = ‘No (pre-rollout)’ 1 = ‘Yes (1-6 months post)’, 2 = ‘Yes (7-12 months post)’, 3 = ‘Yes (13-24 months post)’, and 4 = 'Yes(25+ months post)') (Hardie, 2023: 1035). The proportion of children in low income families is measured for a financial year, so the number of months is measured from the month of the rollout to the middle of the financial year (October). 
 
@@ -122,19 +124,19 @@ ggplot(uc_children_2017_df, aes(x = UC_households_perc, y = children_low_income_
 
 Figure 1 is a binned scatterplot of the proportion of households claiming Universal Credit (x-axis) and the proportion of children living in low income families in 2017. It suggests a strong positive relationship across local authorities. Of course, this correlation could be driven by underlying characteristics of the local authorities. (Reeves & Loopstra, 2021: 9)
 
-### Fixed-Effects Model - Continuous Independent Variable
+### Fixed-Effects Model - Continuous Independent Variable (// Reeves & Loopstra, 2021)
 
 A first baseline fixed effects (time and space) model allows to explore whether this relationship remains even after controlling for time-invariant local authority characteristics and time trends.
 
 *Note: Standard errors are clustered for repeated observations within local authorities.*
 
 ```{r}
-uc_children_fem <- 
+uc_children_cont_fem <- 
   feols(data = uc_children_df, 
         children_low_income_perc ~ UC_households_perc | ltla21_code + year,
         cluster = ~ltla21_code)
 
-summary(uc_children_fem)
+summary(uc_children_cont_fem)
 ```
 
 The results of this first model show that for every 1 percentage point increase in households receiving UC, there is a 0.138 percentage point increase in the proportion of children living in low income families. This relationship is statistically significant at all conventional thresholds. 
@@ -144,18 +146,55 @@ The results of this first model show that for every 1 percentage point increase 
 1. The key assumption needed for a valid estimation of a causal effect with this fixed-effects model is the parallel trends assumption. That is, local authorities which have **not** displayed an increase in UC caseload would have seen the same change in the proportion of children living in low income families as local authorities which have indeed displayed an increase in proportion of households on UC. This assumption needs to be studied further.
 2. It would be benefiticial to control for potentially time varying local authority characteristics such as unemployment. This would make the parallel trends assumption more plausible. More data collection is necessary for that.
 
-## Next steps
+### Fixed-Effects Model - Binary Independent Variable (UC Full Service Rollout) (// Hardie, 2023)
+
+In the next model, the Universal Credit rollout is studied as a binary treatment across all local authorities. This additional analysis is critical to assess a causality link of the rollout of the policy on the proportion of children living in low income families because it allows to run placebo tests, which will be detailed later. 
+
+```{r}
+data("uc_rollout_ltla_15mo")
+data("uc_rollout_ltla_12mo")
+data("uc_rollout_ltla_6mo")
+
+uc_rollout_ltla_15mo_joined <- uc_rollout_ltla_15mo |> 
+  left_join(children_low_income_ltla)
+
+uc_rollout_ltla_12mo_joined <- uc_rollout_ltla_12mo |> 
+  left_join(children_low_income_ltla)
+
+uc_rollout_ltla_6mo_joined <- uc_rollout_ltla_6mo |> 
+  left_join(children_low_income_ltla)
+```
+
+```{r}
+uc_children_binary_15mo_fem <- 
+  feols(data = uc_rollout_ltla_15mo_joined, 
+        children_low_income_perc ~ uc_rolled_out | ltla21_code + year,
+        cluster = ~ltla21_code)
+
+summary(uc_children_binary_15mo_fem)
+
+uc_children_binary_12mo_fem <- 
+  feols(data = uc_rollout_ltla_12mo_joined, 
+        children_low_income_perc ~ uc_rolled_out | ltla21_code + year,
+        cluster = ~ltla21_code)
+
+summary(uc_children_binary_12mo_fem)
+
+uc_children_binary_6mo_fem <- 
+  feols(data = uc_rollout_ltla_6mo_joined, 
+        children_low_income_perc ~ uc_rolled_out | ltla21_code + year,
+        cluster = ~ltla21_code)
+
+summary(uc_children_binary_6mo_fem)
+
+```
+
 
 ### Add time-varying controls to fixed-effects model 
 
 - Research on drivers of child poverty needed
   - unemployment rate
   - nth percentile of wages
-
-### Fixed-Effects Model - Binary Independent Variable (UC Full Service Rollout)
-
-- Need to decide month threshold for 'yes'
-  - e.g. FYE 2018 (April 2017 - March 2018): when do I start considering UC was rolled out for this year?
   
 ### Fixed-Effects Model - Categorical Variable: Long-term effects of UC Full Service Rollout
 
