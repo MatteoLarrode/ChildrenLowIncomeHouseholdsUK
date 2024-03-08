@@ -189,6 +189,7 @@ summary(uc_children_binary_6mo_fem)
 
 ```
 
+None of the models displays a statistically significant effect of the rollout of Universal Credit on the proportion of children in low income families within local authorities. The implications of this finding are difficult to flesh out because of the potential measurement issues emerging from the difference in measurement frequency between the independent variable and outcome. 
 
 ### Add time-varying controls to fixed-effects model 
 

@@ -97,25 +97,33 @@ Authorities)**
     is made available by the Northern Ireland Department for
     Communities, but not yet collected in this package*
 
+#### Universal Credit Rollout: Binary variable
+
 The official [UC ‘Full Service’ transition rollout
 schedule](https://assets.publishing.service.gov.uk/media/5ab507c8e5274a1aa2d414d1/universal-credit-transition-rollout-schedule.pdf)
 published by the DWP was used to create explanatory variables measuring
 cross-local authority variation in the timing of the UC rollout (Hardie,
 2023: 1035). The first is a binary variable indicating whether UC ‘Full
 Service’ had rolled out yet in each year in each local authority in the
-sample (coded: 0 = ‘no’, 1 = ‘yes’). This first binary variable allows
-to study the staggered rollout of UC as a natural experiment, with a
-delayed treatment across local authorities.
+sample (coded: 0 = ‘no’, 1 = ‘yes’). To mitigate bias and ensure
+robustness in the conversion of the monthly Universal Credit rollout
+data to annual data for the analysis, I coded multiple variables with
+different thresholds — December of the previous year, April, and October
+— to determine the minimum duration of Universal Credit presence within
+a financial year required for a local authority to be classified as
+having implemented UC. This first binary variable allows to study the
+staggered rollout of UC as a natural experiment, with a delayed
+treatment across local authorities.
 
-**Include note on how month was converted to year**
+The ‘Full Service’ iteration of Universal Credit was chosen for analysis
+because it represents the comprehensive form of UC, making it accessible
+to all types of claimants, including those with housing expenses. The
+initial ‘Live Service’ variant was not considered in this study due to
+its limited scope, primarily involving claims from single, unemployed
+individuals without housing cost claims, thereby having minimal impact
+on children from low-income families. (Hardie, 2023: 1035).
 
-“The rollout of the ‘Full Service’ version of UC was selected as this is
-the full version of UC that meant UC became available to all claimant
-types including those with housing costs.” The earlier ‘Live Service’
-version was not examined as it is unlikely to have affected children
-living in low income families as it only involved a small number of
-claims from those who were single, unemployed and not claiming housing
-costs” (Hardie, 2023: 1035).
+#### Universal Credit Rollout Duration: Categorical variable
 
 If a significant effect of the rollout on children living in low income
 families in indeed observed, this effect could be expected to vary
@@ -227,7 +235,7 @@ relationship across local authorities. Of course, this correlation could
 be driven by underlying characteristics of the local authorities.
 (Reeves & Loopstra, 2021: 9)
 
-### Fixed-Effects Model - Continuous Independent Variable
+### Fixed-Effects Model - Continuous Independent Variable (// Reeves & Loopstra, 2021)
 
 A first baseline fixed effects (time and space) model allows to explore
 whether this relationship remains even after controlling for
@@ -236,12 +244,12 @@ time-invariant local authority characteristics and time trends.
 *Note: Standard errors are clustered for repeated observations within
 local authorities.*
 
-    uc_children_fem <- 
+    uc_children_cont_fem <- 
       feols(data = uc_children_df, 
             children_low_income_perc ~ UC_households_perc | ltla21_code + year,
             cluster = ~ltla21_code)
 
-    summary(uc_children_fem)
+    summary(uc_children_cont_fem)
 
     ## OLS estimation, Dep. Var.: children_low_income_perc
     ## Observations: 2,380 
@@ -274,19 +282,99 @@ thresholds.
     make the parallel trends assumption more plausible. More data
     collection is necessary for that.
 
-## Next steps
+### Fixed-Effects Model - Binary Independent Variable (UC Full Service Rollout) (// Hardie, 2023)
+
+In the next model, the Universal Credit rollout is studied as a binary
+treatment across all local authorities. This additional analysis is
+critical to assess a causality link of the rollout of the policy on the
+proportion of children living in low income families because it allows
+to run placebo tests, which will be detailed later.
+
+    data("uc_rollout_ltla_15mo")
+    data("uc_rollout_ltla_12mo")
+    data("uc_rollout_ltla_6mo")
+
+    uc_rollout_ltla_15mo_joined <- uc_rollout_ltla_15mo |> 
+      left_join(children_low_income_ltla)
+
+    ## Joining with `by = join_by(ltla21_code, ltla21_name, year)`
+
+    uc_rollout_ltla_12mo_joined <- uc_rollout_ltla_12mo |> 
+      left_join(children_low_income_ltla)
+
+    ## Joining with `by = join_by(ltla21_code, ltla21_name, year)`
+
+    uc_rollout_ltla_6mo_joined <- uc_rollout_ltla_6mo |> 
+      left_join(children_low_income_ltla)
+
+    ## Joining with `by = join_by(ltla21_code, ltla21_name, year)`
+
+    uc_children_binary_15mo_fem <- 
+      feols(data = uc_rollout_ltla_15mo_joined, 
+            children_low_income_perc ~ uc_rolled_out | ltla21_code + year,
+            cluster = ~ltla21_code)
+
+    summary(uc_children_binary_15mo_fem)
+
+    ## OLS estimation, Dep. Var.: children_low_income_perc
+    ## Observations: 2,172 
+    ## Fixed-effects: ltla21_code: 358,  year: 6
+    ## Standard-errors: Clustered (ltla21_code) 
+    ##                Estimate Std. Error  t value Pr(>|t|) 
+    ## uc_rolled_out -0.145409   0.117448 -1.23807   0.2165 
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## RMSE: 1.40669     Adj. R2: 0.952533
+    ##                 Within R2: 4.264e-4
+
+    uc_children_binary_12mo_fem <- 
+      feols(data = uc_rollout_ltla_12mo_joined, 
+            children_low_income_perc ~ uc_rolled_out | ltla21_code + year,
+            cluster = ~ltla21_code)
+
+    summary(uc_children_binary_12mo_fem)
+
+    ## OLS estimation, Dep. Var.: children_low_income_perc
+    ## Observations: 2,172 
+    ## Fixed-effects: ltla21_code: 358,  year: 6
+    ## Standard-errors: Clustered (ltla21_code) 
+    ##               Estimate Std. Error  t value Pr(>|t|) 
+    ## uc_rolled_out 0.071163   0.165788 0.429243  0.66801 
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## RMSE: 1.40691     Adj. R2: 0.952518
+    ##                 Within R2: 1.132e-4
+
+    uc_children_binary_6mo_fem <- 
+      feols(data = uc_rollout_ltla_6mo_joined, 
+            children_low_income_perc ~ uc_rolled_out | ltla21_code + year,
+            cluster = ~ltla21_code)
+
+    summary(uc_children_binary_6mo_fem)
+
+    ## OLS estimation, Dep. Var.: children_low_income_perc
+    ## Observations: 2,172 
+    ## Fixed-effects: ltla21_code: 358,  year: 6
+    ## Standard-errors: Clustered (ltla21_code) 
+    ##                Estimate Std. Error   t value Pr(>|t|) 
+    ## uc_rolled_out -0.100273   0.132627 -0.756055  0.45011 
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## RMSE: 1.40682     Adj. R2: 0.952524
+    ##                 Within R2: 2.385e-4
+
+None of the models displays a statistically significant effect of the
+rollout of Universal Credit on the proportion of children in low income
+families within local authorities. The implications of this finding are
+difficult to flesh out because of the potential measurement issues
+emerging from the difference in measurement frequency between the
+independent variable and outcome.
 
 ### Add time-varying controls to fixed-effects model
 
 -   Research on drivers of child poverty needed
     -   unemployment rate
     -   nth percentile of wages
-
-### Fixed-Effects Model - Binary Independent Variable (UC Full Service Rollout)
-
--   Need to decide month threshold for ‘yes’
-    -   e.g. FYE 2018 (April 2017 - March 2018): when do I start
-        considering UC was rolled out for this year?
 
 ### Fixed-Effects Model - Categorical Variable: Long-term effects of UC Full Service Rollout
 
