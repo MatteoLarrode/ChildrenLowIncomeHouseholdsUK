@@ -88,15 +88,18 @@ uc_children_df <- UC_households_ltla |>
   select(ltla21_code, ltla21_name, year, UC_households_perc, children_low_income_perc) |> 
   filter(!is.na(UC_households_perc) & !is.na(children_low_income_perc))
 
-print(paste0("Number of unique local authorities: ", length(unique(uc_children_df$ltla21_code))))
+uc_children_16_20_df <- uc_children_df |> 
+  filter(year <= 2020)
 
-head(uc_children_df, 10)
+print(paste0("Number of unique local authorities: ", length(unique(uc_children_16_20_df$ltla21_code))))
+
+head(uc_children_reduced_df, 10)
 ```
 There is data for a total of 340 local authorities covering 2016 to 2022, leading to 2380 observations across England, Wales and Scotland.
 
 ### Initial observation
 ```{r}
-summary_statistics <- uc_children_df |> 
+summary_statistics <- uc_children_16_20_df |> 
   group_by(year) |> 
   summarise(
     median_children_low_income = median(children_low_income_perc),
@@ -131,20 +134,82 @@ A first baseline fixed effects (time and space) model allows to explore whether 
 *Note: Standard errors are clustered for repeated observations within local authorities.*
 
 ```{r}
-uc_children_cont_fem <- 
+uc_children_cont_fem_full <- 
   feols(data = uc_children_df, 
+        children_low_income_perc ~ UC_households_perc | ltla21_code + year,
+        cluster = ~ltla21_code)
+
+summary(uc_children_cont_fem_full)
+
+uc_children_cont_fem <- 
+  feols(data = uc_children_16_20_df, 
         children_low_income_perc ~ UC_households_perc | ltla21_code + year,
         cluster = ~ltla21_code)
 
 summary(uc_children_cont_fem)
 ```
 
-The results of this first model show that for every 1 percentage point increase in households receiving UC, there is a 0.138 percentage point increase in the proportion of children living in low income families. This relationship is statistically significant at all conventional thresholds. 
+The results of this first model show that for every 1 percentage point increase in households receiving UC, there is a 0.315 percentage point increase in the proportion of children living in low income families. This relationship is statistically significant at all conventional thresholds. 
 
 **Important notes**:
 
 1. The key assumption needed for a valid estimation of a causal effect with this fixed-effects model is the parallel trends assumption. That is, local authorities which have **not** displayed an increase in UC caseload would have seen the same change in the proportion of children living in low income families as local authorities which have indeed displayed an increase in proportion of households on UC. This assumption needs to be studied further.
 2. It would be benefiticial to control for potentially time varying local authority characteristics such as unemployment. This would make the parallel trends assumption more plausible. More data collection is necessary for that.
+
+#### Adding an interaction term with duration of rollout
+
+I add a variable for the number of months UC has been rolled out in the local authority. 
+This is calculating for each year by doing: 01-01-year - month of the UC rollout.
+
+```{r}
+data("uc_first_active_month")
+
+# Join the first active date with main dataset & calculate number of months UC 
+# has been active by the end of each year
+uc_children_16_20_new_df <- uc_children_16_20_df |> 
+  left_join(uc_first_active, by = "ltla21_code") |> 
+  mutate(
+    months_active = ifelse(
+      year >= year(first_active_date),
+      ((year - year(first_active_date)) * 12) + (12 - month(first_active_date) + 1),
+      0),
+    years_active = ifelse(
+      year >= year(first_active_date),
+      year - year(first_active_date),
+      0)
+  ) |> 
+  select(-first_active_date)
+```
+
+Now let's add the interaction term in the fixed-effects model to see if the effect of the UC rollout is moderated by the number of months Universal Credit has been active in the local authority. Standard errors are still clustered by local authority.
+
+```{r}
+uc_children_cont_fem_interaction <- 
+  feols(data = uc_children_16_20_new_df, 
+        children_low_income_perc ~ UC_households_perc * years_active | ltla21_code + year,
+        cluster = ~ltla21_code)
+
+summary(uc_children_cont_fem_interaction)
+```
+
+We can visualise change in the increase in the proportion of children in low income families for every 1ppt increase in the proportion of households on UC, using the interaction term:
+
+```{r}
+# Extract coefficients
+beta_1 <- coef(uc_children_cont_fem_interaction)["UC_households_perc"]
+beta_3 <- coef(uc_children_cont_fem_interaction)["UC_households_perc:years_active"]
+# Extract standard errors
+se_beta_1 <- se(uc_children_cont_fem_interaction)["UC_households_perc"]
+se_beta_3 <- se(uc_children_cont_fem_interaction)["UC_households_perc:years_active"]
+
+# Create a sequence of 'years_active' values: max is 5 years in the data
+years_active <- 0:5
+
+# Compute the marginal effect for each year
+marginal_effects <- beta_1 + (beta_3 * years_active)
+
+# HOW TO COMPUTE CONFIDENCE INTERVAL OF MARGINAL EFFECTS?
+```
 
 ### Fixed-Effects Model - Binary Independent Variable (UC Full Service Rollout) (// Hardie, 2023)
 

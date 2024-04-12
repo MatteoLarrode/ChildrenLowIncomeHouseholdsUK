@@ -49,7 +49,8 @@ set_values_to_1 <- function(row) {
 }
 
 # Apply function rowise
-uc_rollout_processed <- as.data.frame(t(apply(uc_rollout_raw, 1, set_values_to_1)))
+uc_rollout_processed <- as.data.frame(t(apply(uc_rollout_raw, 1, set_values_to_1))) |> 
+  select(-total_appearances)
 
 # Outcome measured in financial year (April to March): Need to decide month threshold for rollout
 # FYE 2018 (April 2017 - March 2018): when do I start considering UC was rolled out for this year?
@@ -136,7 +137,24 @@ uc_rollout_ltla_6mo <- uc_rollout_ltla_6mo_wide |>
   ) |> 
   mutate(year = as.numeric(year))
 
-# ---- Save datasets ----
+# Save datasets
 usethis::use_data(uc_rollout_ltla_15mo, overwrite = TRUE)
 usethis::use_data(uc_rollout_ltla_12mo, overwrite = TRUE)
 usethis::use_data(uc_rollout_ltla_6mo, overwrite = TRUE)
+
+# ---- UC Rollout Number of Months ----
+uc_active <- uc_rollout_processed |> 
+  pivot_longer(cols = -c(ltla21_code, ltla21_name),
+               names_to = "month_year", values_to = "uc_live") |> 
+  mutate(date = as.Date(paste("01", str_to_title(month_year), sep="-"), format="%d-%B_%Y")) |> 
+  filter(uc_live == 1)
+
+# Finding the first month UC was active for each local authority
+uc_first_active_month <- uc_active |> 
+  group_by(ltla21_code) |> 
+  summarise(first_active_date = min(date), .groups = 'drop')
+
+# Save dataset
+usethis::use_data(uc_first_active_month, overwrite = TRUE)
+
+
