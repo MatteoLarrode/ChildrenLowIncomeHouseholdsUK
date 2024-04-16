@@ -155,19 +155,24 @@ income, on local authority and year.
 
     data("children_low_income_ltla")
     data("UC_households_ltla")
+    data("unemployment_ltla")
 
     uc_children_df <- UC_households_ltla |>
       left_join(children_low_income_ltla) |>
-      select(ltla21_code, ltla21_name, year, UC_households_perc, children_low_income_perc) |> 
+      left_join(unemployment_ltla) |> 
+      select(ltla21_code, ltla21_name, year, UC_households_perc, children_low_income_perc, unemployment_perc) |> 
       filter(!is.na(UC_households_perc) & !is.na(children_low_income_perc))
 
-    print(paste0("Number of unique local authorities: ", length(unique(uc_children_df$ltla21_code))))
+    uc_children_16_20_df <- uc_children_df |> 
+      filter(year <= 2020)
+
+    print(paste0("Number of unique local authorities: ", length(unique(uc_children_16_20_df$ltla21_code))))
 
     ## [1] "Number of unique local authorities: 340"
 
-    head(uc_children_df, 10)
+    head(uc_children_16_20_df, 10)
 
-    ## # A tibble: 10 × 5
+    ## # A tibble: 10 × 6
     ##    ltla21_code ltla21_name    year UC_households_perc children_low_income_perc
     ##    <chr>       <chr>         <dbl>              <dbl>                    <dbl>
     ##  1 E06000047   County Durham  2016              0.914                     23.4
@@ -175,18 +180,19 @@ income, on local authority and year.
     ##  3 E06000047   County Durham  2018              3.84                      26.9
     ##  4 E06000047   County Durham  2019              9.02                      27.3
     ##  5 E06000047   County Durham  2020             12.4                       32.3
-    ##  6 E06000047   County Durham  2021             19.2                       36.0
-    ##  7 E06000047   County Durham  2022             18.6                       30.8
-    ##  8 E06000005   Darlington     2016              0.717                     21.7
-    ##  9 E06000005   Darlington     2017              2.06                      24.8
-    ## 10 E06000005   Darlington     2018              2.33                      26.8
+    ##  6 E06000005   Darlington     2016              0.717                     21.7
+    ##  7 E06000005   Darlington     2017              2.06                      24.8
+    ##  8 E06000005   Darlington     2018              2.33                      26.8
+    ##  9 E06000005   Darlington     2019              7.56                      26.6
+    ## 10 E06000005   Darlington     2020             12.5                       32.0
+    ## # ℹ 1 more variable: unemployment_perc <dbl>
 
 There is data for a total of 340 local authorities covering 2016 to
 2022, leading to 2380 observations across England, Wales and Scotland.
 
 ### Initial observation
 
-    summary_statistics <- uc_children_df |> 
+    summary_statistics <- uc_children_16_20_df |> 
       group_by(year) |> 
       summarise(
         median_children_low_income = median(children_low_income_perc),
@@ -196,7 +202,7 @@ There is data for a total of 340 local authorities covering 2016 to
 
     print(summary_statistics)
 
-    ## # A tibble: 7 × 4
+    ## # A tibble: 5 × 4
     ##    year median_children_low_income lower_IQR_children_l…¹ upper_IQR_children_l…²
     ##   <dbl>                      <dbl>                  <dbl>                  <dbl>
     ## 1  2016                       17.8                   14.1                   22.2
@@ -204,8 +210,6 @@ There is data for a total of 340 local authorities covering 2016 to
     ## 3  2018                       19.6                   15.1                   24.5
     ## 4  2019                       19.5                   15.1                   24.1
     ## 5  2020                       20.8                   16.0                   26.5
-    ## 6  2021                       19.5                   14.9                   26.4
-    ## 7  2022                       22.3                   16.6                   28.0
     ## # ℹ abbreviated names: ¹​lower_IQR_children_low_income,
     ## #   ²​upper_IQR_children_low_income
 
@@ -244,26 +248,48 @@ time-invariant local authority characteristics and time trends.
 *Note: Standard errors are clustered for repeated observations within
 local authorities.*
 
-    uc_children_cont_fem <- 
-      feols(data = uc_children_df, 
+    uc_children_FE_baseline <- 
+      feols(data = uc_children_16_20_df, 
             children_low_income_perc ~ UC_households_perc | ltla21_code + year,
             cluster = ~ltla21_code)
 
-    summary(uc_children_cont_fem)
+    summary(uc_children_FE_baseline)
 
     ## OLS estimation, Dep. Var.: children_low_income_perc
-    ## Observations: 2,380 
-    ## Fixed-effects: ltla21_code: 340,  year: 7
+    ## Observations: 1,700 
+    ## Fixed-effects: ltla21_code: 340,  year: 5
     ## Standard-errors: Clustered (ltla21_code) 
-    ##                    Estimate Std. Error t value   Pr(>|t|)    
-    ## UC_households_perc 0.137705   0.026661 5.16513 4.1074e-07 ***
+    ##                    Estimate Std. Error t value  Pr(>|t|)    
+    ## UC_households_perc 0.314569   0.034511 9.11515 < 2.2e-16 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## RMSE: 1.97767     Adj. R2: 0.923087
-    ##                 Within R2: 0.025308
+    ## RMSE: 1.22273     Adj. R2: 0.964956
+    ##                 Within R2: 0.12048
+
+    # Add unemployment control
+    uc_children_FE_control <- 
+      feols(data = uc_children_16_20_df, 
+            children_low_income_perc ~ UC_households_perc + unemployment_perc | ltla21_code + year,
+            cluster = ~ltla21_code)
+
+    ## NOTE: 5 observations removed because of NA values (RHS: 5).
+
+    summary(uc_children_FE_control)
+
+    ## OLS estimation, Dep. Var.: children_low_income_perc
+    ## Observations: 1,695 
+    ## Fixed-effects: ltla21_code: 339,  year: 5
+    ## Standard-errors: Clustered (ltla21_code) 
+    ##                     Estimate Std. Error  t value  Pr(>|t|)    
+    ## UC_households_perc  0.288124   0.030490  9.44978 < 2.2e-16 ***
+    ## unemployment_perc  -0.837425   0.085699 -9.77172 < 2.2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## RMSE: 1.16516     Adj. R2: 0.968156
+    ##                 Within R2: 0.202847
 
 The results of this first model show that for every 1 percentage point
-increase in households receiving UC, there is a 0.138 percentage point
+increase in households receiving UC, there is a 0.315 percentage point
 increase in the proportion of children living in low income families.
 This relationship is statistically significant at all conventional
 thresholds.
@@ -281,6 +307,76 @@ thresholds.
     local authority characteristics such as unemployment. This would
     make the parallel trends assumption more plausible. More data
     collection is necessary for that.
+
+#### Adding an interaction term with duration of rollout
+
+I add a variable for the number of months UC has been rolled out in the
+local authority. This is calculating for each year by doing:
+01-01-year - month of the UC rollout.
+
+    data("uc_first_active_month")
+
+    # Join the first active date with main dataset & calculate number of months UC 
+    # has been active by the end of each year
+    uc_children_16_20_new_df <- uc_children_16_20_df |> 
+      left_join(uc_first_active_month, by = "ltla21_code") |> 
+      mutate(
+        months_active = ifelse(
+          year >= year(first_active_date),
+          ((year - year(first_active_date)) * 12) + (12 - month(first_active_date) + 1),
+          0),
+        years_active = ifelse(
+          year >= year(first_active_date),
+          year - year(first_active_date),
+          0)
+      ) |> 
+      select(-first_active_date)
+
+Now let’s add the interaction term in the fixed-effects model to see if
+the effect of the UC rollout is moderated by the number of months
+Universal Credit has been active in the local authority. Standard errors
+are still clustered by local authority.
+
+    uc_children_cont_fem_interaction <- 
+      feols(data = uc_children_16_20_new_df, 
+            children_low_income_perc ~ UC_households_perc * years_active | ltla21_code + year,
+            cluster = ~ltla21_code)
+
+    ## NOTE: 15 observations removed because of NA values (RHS: 15).
+
+    summary(uc_children_cont_fem_interaction)
+
+    ## OLS estimation, Dep. Var.: children_low_income_perc
+    ## Observations: 1,685 
+    ## Fixed-effects: ltla21_code: 337,  year: 5
+    ## Standard-errors: Clustered (ltla21_code) 
+    ##                                  Estimate Std. Error  t value   Pr(>|t|)    
+    ## UC_households_perc               0.374370   0.053312  7.02229 1.2159e-11 ***
+    ## years_active                    -1.129433   0.196394 -5.75084 1.9970e-08 ***
+    ## UC_households_perc:years_active  0.016429   0.012375  1.32762 1.8521e-01    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## RMSE: 1.20071     Adj. R2: 0.966301
+    ##                 Within R2: 0.158035
+
+We can visualise change in the increase in the proportion of children in
+low income families for every 1ppt increase in the proportion of
+households on UC, using the interaction term:
+
+    # Extract coefficients
+    beta_1 <- coef(uc_children_cont_fem_interaction)["UC_households_perc"]
+    beta_3 <- coef(uc_children_cont_fem_interaction)["UC_households_perc:years_active"]
+    # Extract standard errors
+    se_beta_1 <- se(uc_children_cont_fem_interaction)["UC_households_perc"]
+    se_beta_3 <- se(uc_children_cont_fem_interaction)["UC_households_perc:years_active"]
+
+    # Create a sequence of 'years_active' values: max is 5 years in the data
+    years_active <- 0:5
+
+    # Compute the marginal effect for each year
+    marginal_effects <- beta_1 + (beta_3 * years_active)
+
+    # HOW TO COMPUTE CONFIDENCE INTERVAL OF MARGINAL EFFECTS?
 
 ### Fixed-Effects Model - Binary Independent Variable (UC Full Service Rollout) (// Hardie, 2023)
 

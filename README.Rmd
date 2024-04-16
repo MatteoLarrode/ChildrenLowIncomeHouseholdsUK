@@ -82,10 +82,12 @@ I join the datasets of households on UC and children living in low income, on lo
 ```{r message=FALSE}
 data("children_low_income_ltla")
 data("UC_households_ltla")
+data("unemployment_ltla")
 
 uc_children_df <- UC_households_ltla |>
   left_join(children_low_income_ltla) |>
-  select(ltla21_code, ltla21_name, year, UC_households_perc, children_low_income_perc) |> 
+  left_join(unemployment_ltla) |> 
+  select(ltla21_code, ltla21_name, year, UC_households_perc, children_low_income_perc, unemployment_perc) |> 
   filter(!is.na(UC_households_perc) & !is.na(children_low_income_perc))
 
 uc_children_16_20_df <- uc_children_df |> 
@@ -93,7 +95,7 @@ uc_children_16_20_df <- uc_children_df |>
 
 print(paste0("Number of unique local authorities: ", length(unique(uc_children_16_20_df$ltla21_code))))
 
-head(uc_children_reduced_df, 10)
+head(uc_children_16_20_df, 10)
 ```
 There is data for a total of 340 local authorities covering 2016 to 2022, leading to 2380 observations across England, Wales and Scotland.
 
@@ -134,19 +136,20 @@ A first baseline fixed effects (time and space) model allows to explore whether 
 *Note: Standard errors are clustered for repeated observations within local authorities.*
 
 ```{r}
-uc_children_cont_fem_full <- 
-  feols(data = uc_children_df, 
-        children_low_income_perc ~ UC_households_perc | ltla21_code + year,
-        cluster = ~ltla21_code)
-
-summary(uc_children_cont_fem_full)
-
-uc_children_cont_fem <- 
+uc_children_FE_baseline <- 
   feols(data = uc_children_16_20_df, 
         children_low_income_perc ~ UC_households_perc | ltla21_code + year,
         cluster = ~ltla21_code)
 
-summary(uc_children_cont_fem)
+summary(uc_children_FE_baseline)
+
+# Add unemployment control
+uc_children_FE_control <- 
+  feols(data = uc_children_16_20_df, 
+        children_low_income_perc ~ UC_households_perc + unemployment_perc | ltla21_code + year,
+        cluster = ~ltla21_code)
+
+summary(uc_children_FE_control)
 ```
 
 The results of this first model show that for every 1 percentage point increase in households receiving UC, there is a 0.315 percentage point increase in the proportion of children living in low income families. This relationship is statistically significant at all conventional thresholds. 
@@ -167,7 +170,7 @@ data("uc_first_active_month")
 # Join the first active date with main dataset & calculate number of months UC 
 # has been active by the end of each year
 uc_children_16_20_new_df <- uc_children_16_20_df |> 
-  left_join(uc_first_active, by = "ltla21_code") |> 
+  left_join(uc_first_active_month, by = "ltla21_code") |> 
   mutate(
     months_active = ifelse(
       year >= year(first_active_date),
