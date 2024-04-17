@@ -227,8 +227,22 @@ across local authorities (2017)**
     uc_children_2017_df <- uc_children_df |>
       filter(year == 2017)
 
+    cor_value <- round(cor(uc_children_2017_df$UC_households_perc, uc_children_2017_df$children_low_income_perc),2)
+
     ggplot(uc_children_2017_df, aes(x = UC_households_perc, y = children_low_income_perc)) +
-      geom_point()
+      geom_point() +
+      geom_smooth(method = "lm", color = "blue", linewidth = 0.5) +
+      labs(x = "Households on UC (%)", 
+           y = "Children in Low Income Households (%)") +
+      annotate("text", x=7, y=40, label = paste("Correlation:", cor_value), size = 4, colour = "#636363") +
+      theme_minimal()+
+      theme(
+        legend.position = "none",
+        panel.grid.minor = element_blank(),
+        axis.title = element_text(size = 12)
+      )
+
+    ## `geom_smooth()` using formula = 'y ~ x'
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-3-1.png)
 
@@ -243,7 +257,9 @@ be driven by underlying characteristics of the local authorities.
 
 A first baseline fixed effects (time and space) model allows to explore
 whether this relationship remains even after controlling for
-time-invariant local authority characteristics and time trends.
+time-invariant local authority characteristics and time trends. In a
+second model, we add a time-varying local authority level control:
+unemployment rate.
 
 *Note: Standard errors are clustered for repeated observations within
 local authorities.*
@@ -292,21 +308,10 @@ The results of this first model show that for every 1 percentage point
 increase in households receiving UC, there is a 0.315 percentage point
 increase in the proportion of children living in low income families.
 This relationship is statistically significant at all conventional
-thresholds.
-
-**Important notes**:
-
-1.  The key assumption needed for a valid estimation of a causal effect
-    with this fixed-effects model is the parallel trends assumption.
-    That is, local authorities which have **not** displayed an increase
-    in UC caseload would have seen the same change in the proportion of
-    children living in low income families as local authorities which
-    have indeed displayed an increase in proportion of households on UC.
-    This assumption needs to be studied further.
-2.  It would be benefiticial to control for potentially time varying
-    local authority characteristics such as unemployment. This would
-    make the parallel trends assumption more plausible. More data
-    collection is necessary for that.
+thresholds. This estimate is not strongly affected, neither in its scale
+nor in its statistical significance when controlling for unemployment
+rates. This finding reinforces the claim that the parallel trends
+assumption more plausible is this situation.
 
 #### Adding an interaction term with duration of rollout
 
@@ -318,7 +323,7 @@ local authority. This is calculating for each year by doing:
 
     # Join the first active date with main dataset & calculate number of months UC 
     # has been active by the end of each year
-    uc_children_16_20_new_df <- uc_children_16_20_df |> 
+    uc_children_16_20_interaction_df <- uc_children_16_20_df |> 
       left_join(uc_first_active_month, by = "ltla21_code") |> 
       mutate(
         months_active = ifelse(
@@ -337,46 +342,81 @@ the effect of the UC rollout is moderated by the number of months
 Universal Credit has been active in the local authority. Standard errors
 are still clustered by local authority.
 
-    uc_children_cont_fem_interaction <- 
-      feols(data = uc_children_16_20_new_df, 
-            children_low_income_perc ~ UC_households_perc * years_active | ltla21_code + year,
+    uc_children_FE_interaction <- 
+      feols(data = uc_children_16_20_interaction_df, 
+            children_low_income_perc ~ UC_households_perc * years_active + unemployment_perc | ltla21_code + year,
             cluster = ~ltla21_code)
 
     ## NOTE: 15 observations removed because of NA values (RHS: 15).
 
-    summary(uc_children_cont_fem_interaction)
+    summary(uc_children_FE_interaction)
 
     ## OLS estimation, Dep. Var.: children_low_income_perc
     ## Observations: 1,685 
     ## Fixed-effects: ltla21_code: 337,  year: 5
     ## Standard-errors: Clustered (ltla21_code) 
-    ##                                  Estimate Std. Error  t value   Pr(>|t|)    
-    ## UC_households_perc               0.374370   0.053312  7.02229 1.2159e-11 ***
-    ## years_active                    -1.129433   0.196394 -5.75084 1.9970e-08 ***
-    ## UC_households_perc:years_active  0.016429   0.012375  1.32762 1.8521e-01    
+    ##                                  Estimate Std. Error   t value   Pr(>|t|)    
+    ## UC_households_perc               0.340482   0.051203  6.649693 1.1908e-10 ***
+    ## years_active                    -0.900931   0.187594 -4.802560 2.3633e-06 ***
+    ## unemployment_perc               -0.774729   0.087033 -8.901537  < 2.2e-16 ***
+    ## UC_households_perc:years_active  0.011472   0.012754  0.899449 3.6906e-01    
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## RMSE: 1.20071     Adj. R2: 0.966301
-    ##                 Within R2: 0.158035
+    ## RMSE: 1.15132     Adj. R2: 0.968993
+    ##                 Within R2: 0.225875
 
-We can visualise change in the increase in the proportion of children in
-low income families for every 1ppt increase in the proportion of
-households on UC, using the interaction term:
+We can visualise the marginal effects of the interaction (change in the
+increase in the proportion of children in low income families for every
+1ppt increase in the proportion of households on UC), using the
+interaction term:
 
     # Extract coefficients
-    beta_1 <- coef(uc_children_cont_fem_interaction)["UC_households_perc"]
-    beta_3 <- coef(uc_children_cont_fem_interaction)["UC_households_perc:years_active"]
-    # Extract standard errors
-    se_beta_1 <- se(uc_children_cont_fem_interaction)["UC_households_perc"]
-    se_beta_3 <- se(uc_children_cont_fem_interaction)["UC_households_perc:years_active"]
+    beta_1 <- coef(uc_children_FE_interaction)["UC_households_perc"]
+    beta_3 <- coef(uc_children_FE_interaction)["UC_households_perc:years_active"]
 
-    # Create a sequence of 'years_active' values: max is 5 years in the data
-    years_active <- 0:5
+    # For confidence interval:
+    # Compute variance of the marginal effect of "proportion of households on UC"
+    # Marginal effect: b1 + b3.Years
+    # var(aX + bY) = a^2.var(X) + b^2.var(Y) + 2ab.cov(X.Y)
+    # In our case: var(β1 + β3.Years) = var(β1) + Years^2.var(β3) + 2.Years.cov(β1.β3)
 
-    # Compute the marginal effect for each year
-    marginal_effects <- beta_1 + (beta_3 * years_active)
+    # Extract variances
+    # Get the variance-covariance matrix of the model's estimates
+    vcov_matrix <- vcov(uc_children_FE_interaction)
 
-    # HOW TO COMPUTE CONFIDENCE INTERVAL OF MARGINAL EFFECTS?
+    var_beta_1 <- vcov_matrix["UC_households_perc", "UC_households_perc"]
+    var_beta_3 <- vcov_matrix["UC_households_perc:years_active", "UC_households_perc:years_active"]
+    cov_beta_1_beta_3 <- vcov_matrix["UC_households_perc", "UC_households_perc:years_active"]
+
+    # Build the dataset (95% confidence interval)
+    interaction_visualisation <-
+      tibble(
+        Year = 0:5,
+        Marginal_Effect = beta_1 + (beta_3 * Year),
+        Variance = var_beta_1 + Year^2 * var_beta_3 + 2 * Year * cov_beta_1_beta_3,
+        CI_lower = Marginal_Effect - 1.96 * sqrt(Variance),
+        CI_upper = Marginal_Effect + 1.96 * sqrt(Variance)
+      )
+
+    # Visualise
+    ggplot(interaction_visualisation, aes(x = Year, y = Marginal_Effect)) +
+      geom_line() +
+      geom_point() +
+      geom_errorbar(aes(ymin = CI_lower, ymax = CI_upper), width = 0.1) +
+      theme_minimal() + # This sets a minimal theme for the plot
+      labs(
+        x = "Number of years UC has been active in the local authority",
+        y = "Change in proportion of children in poverty for every year's increase in UC"
+      ) +
+      annotate("text", x = 1, y = 0.48, label = paste("Interaction estimate:", round(beta_3, 3)), size = 5, colour = "#636363") +
+      theme_minimal() +
+      theme(
+        legend.position = "none",
+        panel.grid.minor = element_blank(),
+        axis.title = element_text(size = 13)
+      )
+
+![](README_files/figure-markdown_strict/unnamed-chunk-7-1.png)
 
 ### Fixed-Effects Model - Binary Independent Variable (UC Full Service Rollout) (// Hardie, 2023)
 
@@ -465,58 +505,3 @@ families within local authorities. The implications of this finding are
 difficult to flesh out because of the potential measurement issues
 emerging from the difference in measurement frequency between the
 independent variable and outcome.
-
-### Add time-varying controls to fixed-effects model
-
--   Research on drivers of child poverty needed
-    -   unemployment rate
-    -   nth percentile of wages
-
-### Fixed-Effects Model - Categorical Variable: Long-term effects of UC Full Service Rollout
-
--   How to count number of months from rollout to reference year
-    -   e.g. FYE 2018 (April 2017 - March 2018): if UC has been rolled
-        out in December 2016, how many months are counted for FYE 2018?
-
-### Scottish Child Payment
-
-“On 15 February 2021 we introduced the Scottish Child Payment for
-low-income families with children under six as part of our work on
-tackling child poverty. It was initially set at a rate of £10 per week
-per child with no limit to the number of eligible children.
-
-In March 2022 we published “Best Start, Bright Futures: tackling child
-poverty delivery plan 2022 to 2026” in which we committed to doubling
-the value of the Scottish Child Payment from April 2022, delivering the
-benefit in full to all eligible children under the age of 16 and further
-increasing the value to £25 per child, per week, by the end of 2022.
-These commitments were delivered on 14 November 2022.”
-(<https://www.gov.scot/policies/social-security/scottish-child-payment/>)
-
--   MSOA level children living in low income families for Scotland and
-    England
-    -   difference in differences for pre-2021 and 2021-2022
-    -   with matching on UC takeup, unemployment & pre-treatment outcome
-
-### Two-Child Limit in Universal Credit
-
--   Households with a third or subsequent child born from 6 April 2017
-    claiming Universal Credit or Child Tax Credit no longer receive
-    additional amounts for these children. The policy only applies to
-    children born from 6 April 2017, so not all families with a third or
-    subsequent child claiming Universal Credit will be affected until
-    the mid-2030s. In April 2023, the two-child limit affected 422,000
-    (55%) of the 772,000 families with three or more children claiming
-    Universal Credit or Child Tax Credit. 22,000 households had an
-    exception.
-
--   Initial results: Relative poverty among families with three or more
-    children, which has been rising since 2013, has continued to
-    increase since April 2017. The Government points to falling absolute
-    poverty over the period and questions the use of relative poverty
-    measures.
-
--   More research needed (Patrick et al, 2023)
-
--   Possibility of quasi-experimental research? Data on number of
-    children living in low income by age available.
