@@ -137,8 +137,6 @@ ggplot(uc_children_2017_df, aes(x = UC_households_perc, y = children_low_income_
     panel.grid.minor = element_blank(),
     axis.title = element_text(size = 12)
   )
-
-
 ```
 
 Figure 1 is a binned scatterplot of the proportion of households claiming Universal Credit (x-axis) and the proportion of children living in low income families in 2017. It suggests a strong positive relationship across local authorities. Of course, this correlation could be driven by underlying characteristics of the local authorities. (Reeves & Loopstra, 2021: 9)
