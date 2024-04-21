@@ -196,7 +196,11 @@ Now let's add the interaction term in the fixed-effects model to see if the effe
 ```{r}
 uc_children_FE_interaction <- 
   feols(data = uc_children_16_20_interaction_df, 
-        children_low_income_perc ~ UC_households_perc * years_active + unemployment_perc | ltla21_code + year,
+        children_low_income_perc ~ 
+          UC_households_perc + 
+          years_active +
+          UC_households_perc * years_active +
+          unemployment_perc | ltla21_code + year,
         cluster = ~ltla21_code)
 
 summary(uc_children_FE_interaction)
@@ -241,17 +245,25 @@ ggplot(interaction_visualisation, aes(x = Year, y = Marginal_Effect)) +
   theme_minimal() + # This sets a minimal theme for the plot
   labs(
     x = "Number of years UC has been active in the local authority",
-    y = "Change in proportion of children in poverty for every year's increase in UC"
+    y = "Change in proportion of children in poverty\n for every 1ppt increase in the proportion of\n households on UC"
   ) +
   annotate("text", x = 1, y = 0.48, label = paste("Interaction estimate:", round(beta_3, 3)), size = 5, colour = "#636363") +
   theme_minimal() +
   theme(
     legend.position = "none",
     panel.grid.minor = element_blank(),
-    axis.title = element_text(size = 13)
+    axis.title = element_text(size = 13),
+    axis.text = element_text(size =11)
   )
 
 ```
+
+### Impact of family type on the effect of UC rollout on child poverty  
+
+The literature suggests specific design features of Universal Credit may have affected lone parents disproportionately. After having compiled data on the percentage of lone parents households in local authorities, I add an interaction term to the model.
+
+
+
 
 ### Fixed-Effects Model - Binary Independent Variable (UC Full Service Rollout) (// Hardie, 2023)
 

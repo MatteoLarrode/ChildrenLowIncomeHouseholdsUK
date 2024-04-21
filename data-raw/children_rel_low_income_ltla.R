@@ -1,5 +1,5 @@
 # ---- CHILDREN IN RELATIVE LOW INCOME FAMILIES - LOCAL AUTHORITIES ----
-# NOTE: Local authorities (called ltla for Lower Tier Local Authorities) - 374
+# NOTE: Local authorities (called ltla for Lower Tier Local Authorities) - 363
 # - England: English local authority districts (309)
 # - Wales: Unitary authorities (22)
 # - Scotland: Scottish council areas (32)
@@ -20,7 +20,7 @@ ltla21 <- geographr::boundaries_ltla21 |>
 
 # ---- Number of Children ----
 # For age filtering, Children in Low Income Families dataset considers 0-16
-# England - Source: Office for National Statistics
+# England & Wales - Source: Office for National Statistics
 # https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/estimatesofthepopulationforenglandandwales
 url_eng_wales <- "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/estimatesofthepopulationforenglandandwales/mid2011tomid2022detailedtimeseries/myebtablesenglandwales20112022v2.xlsx"
 download_eng_wales <- tempfile(fileext = ".xlsx")
@@ -81,13 +81,11 @@ children_pop_scot <- population_raw_scot |>
          population_0_16) |> 
   filter(ltla21_code != "S92000003")
 
-# Final children population dataset (and impute for Scotland 2022)
+# Final children population dataset
 population_0_16 <- rbind(children_pop_eng_wales, children_pop_scot) |> 
-  complete(ltla21_code, year, fill = list(population_0_16 = NA)) |> 
   group_by(ltla21_code) |> 
-  mutate(population_0_16 = na_ma(population_0_16)) |> 
   ungroup()
-  
+
 # ---- Children in relative low income families - Local Authorities ----
 # Source: Department of Work and Pensions (DWP)
 # Stat-Xplore - Children in Low Income Families > Relative Low Income
@@ -110,6 +108,7 @@ children_low_income_ltla_wide <- read_csv("inst/extdata/children_relative_low_in
   left_join(ltla21) |>
   relocate(ltla21_code, .after = ltla21_name)
 
+# Final dataset: 2016-2020
 children_low_income_ltla <- children_low_income_ltla_wide |>
   pivot_longer(
     cols = starts_with("children_low_income_abs_fye"),
@@ -121,42 +120,54 @@ children_low_income_ltla <- children_low_income_ltla_wide |>
     children_low_income_abs = as.numeric(children_low_income_abs)
   ) |> 
   left_join(population_0_16) |> 
-  mutate(children_low_income_perc = (children_low_income_abs / population_0_16) * 100)
+  mutate(children_low_income_perc = (children_low_income_abs / population_0_16) * 100) |> 
+  filter(!is.na(children_low_income_perc),
+         between(year, 2016, 2020))
 
+# ---- Checks ----
+# We exclude Northern Ireland
+ltla21 <- ltla21 |> 
+  filter(!str_starts(ltla21_code, "N"))
+
+# Step 1: Checking completeness of local authorities
+# Checking for local authorities in children_low_income_ltla that are not in ltla21_noNI
+unmatched_in_children <- anti_join(children_low_income_ltla, ltla21_noNI, by = "ltla21_code")
+
+if(nrow(unmatched_in_children) > 0) {
+  print("Local authorities in the children low income dataset not found in ltla21_noNI:")
+  print(unmatched_in_children)
+} else {
+  print("All local authorities in the children low income dataset match those in ltla21_noNI.")
+}
+
+# Checking for local authorities in ltla21_noNI that are not in children_low_income_ltla
+# (= missing data)
+unmatched_in_ltla21_noNI <- anti_join(ltla21_noNI, children_low_income_ltla, by = "ltla21_code")
+
+if(nrow(unmatched_in_ltla21) > 0) {
+  print("Local authorities in ltla21_noNI not found in the children low income dataset:")
+  print(unmatched_in_ltla21)
+} else {
+  print("All local authorities in ltla21_noNI are represented in the children low income dataset.")
+}
+
+# RESULT: Only Northern Ireland missing
+
+# Step 2: Ensuring there is data for all years 2016-2020 for each local authority
+year_coverage <- children_low_income_ltla |> 
+  group_by(ltla21_code) |>
+  summarize(years_count = n_distinct(year)) |>
+  filter(years_count != 5)  # Filter out those with complete data for all 5 years
+
+# Output the results with a message
+if(nrow(year_coverage) > 0) {
+  print("Local authorities with incomplete data across the years 2016 to 2020:")
+  print(year_coverage)
+} else {
+  print("All local authorities have complete data for each year from 2016 to 2020.")
+}
+
+# RESULT: Missing years of data for 4 Scottish LA's (new)
+
+# ---- Save dataset ----
 usethis::use_data(children_low_income_ltla, overwrite = TRUE)
-
-# ---- ARCHIVED CODE ----
-# Download data
-# Source: https://www.gov.uk/government/collections/children-in-low-income-families-local-area-statistics
-# url <- "https://assets.publishing.service.gov.uk/media/641c5cdb5155a200136ad550/children-in-low-income-families-local-area-statistics-2014-to-2022.ods"
-# 
-# download <- tempfile(fileext = ".ods")
-# 
-# request(url) |>
-#   req_progress() |>
-#   req_perform(download)
-# 
-# children_rel_low_income_ltla_raw <-
-#   read_ods(
-#     download,
-#     sheet = "3_Relative_Local_Authority",
-#     range = "A10:R385"
-#   ) |>
-#   clean_names()
-# 
-# # Clean data
-# children_rel_low_income_ltla <- children_rel_low_income_ltla_raw |>
-#   # select only percentages of children living in low income families
-#   select(
-#     ltla21_name = local_authority_note_2,
-#     ltla21_code = area_code,
-#     children_perc_fye15 = percentage_of_children_fye_2015_note_3,
-#     children_perc_fye16 = percentage_of_children_fye_2016_note_3,
-#     children_perc_fye17 = percentage_of_children_fye_2017_note_3,
-#     children_perc_fye18 = percentage_of_children_fye_2018_note_3,
-#     children_perc_fye19 = percentage_of_children_fye_2019_note_3,
-#     children_perc_fye20 = percentage_of_children_fye_2020_note_3,
-#     children_perc_fye21 = percentage_of_children_fye_2021_note_3,
-#     children_perc_fye22 = percentage_of_children_fye_2022_p_note_3,
-#   ) |>
-#   filter(ltla21_code != "K02000001")
