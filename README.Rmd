@@ -8,7 +8,7 @@ output: md_document
 
 In this dissertation, I conduct a quantitative analysis of the effect of welfare policy changes in the UK on the proportion of children living in relative low-income families. 
 
-This Markdown includes the data analysis component of this dissertation. It will first include some exploratory data analysis, and then will be used to run the other components of the quantitative analysis of the impact of UK benefit policies on the number of children living in relative low income families. Note that the collection and cleaning of the data that will be used here is done in scripts in the `data-raw` folder of this repository, and the datasets are available in the `data` folder. 
+This Markdown includes the data analysis component of this dissertation. It will first include some exploratory data analysis, and then will be used to run the other components of the quantitative analysis of the impact of UK benefit policies on the number of children living in relative low income families. Note that the collection and cleaning of the data that will be used here is done in scripts in the `data-raw` folder of this repository, and the datasets are available in the `data` folder.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -87,7 +87,7 @@ print(paste0("Number of unique local authorities: ",
 
 head(dataset_part1, 10)
 ```
-There is data for a total of 340 local authorities covering 2016 to 2022, leading to 2380 observations across England, Wales and Scotland.
+There is data for a total of 340 local authorities covering 2016 to 2020, leading to 1700 observations across England, Wales and Scotland.
 
 ### Initial observation
 ```{r}
@@ -154,7 +154,46 @@ fe_model1 <-
 summary(fe_model1)
 ```
 
-The results of this first model show that for every 1 percentage point increase in households receiving UC, there is a 0.315 percentage point increase in the proportion of children living in low income families. This relationship is statistically significant at all conventional thresholds. This estimate is not strongly affected, neither in its scale nor in its statistical significance when controlling for unemployment rates. This finding reinforces the claim that the parallel trends assumption more plausible is this situation.
+The results of this first model show that for every 1 percentage point increase in households receiving UC, there is a 0.315 percentage point increase in the proportion of children living in low income families. This relationship is statistically significant at all conventional thresholds. This estimate is not strongly affected, neither in its scale nor in its statistical significance when controlling for unemployment rates. This finding reinforces the claim that the parallel trends assumption holds is this situation.
+
+For context, we can estimate the increase in the absolute number of children living in low income households, in a local authority with the average number of children. For that, we need: 
+
+- to calculate the average percentage point increase of households on UC from the previous year,
+- to multiply that by 0.29 to get the estimated percentage point increase in the proportion of children in low income families,
+- to get the average number of children each year. 
+
+```{r}
+dataset_part1_cont <- UC_households_ltla |>
+  left_join(children_low_income_ltla) |>
+  left_join(unemployment_ltla) |>
+  filter(year <= 2020) |>
+  filter(!is.na(UC_households_perc) & !is.na(children_low_income_perc) & !is.na(unemployment_perc)) |>
+  select(
+    ltla21_code, ltla21_name,
+    year, UC_households_perc,
+    population_0_16, children_low_income_perc
+  )
+
+# Calculate the year-to-year difference in UC_households_perc for each LA
+dataset_part1_cont <- dataset_part1_cont |> 
+  arrange(ltla21_code, year) |> 
+  group_by(ltla21_code) |> 
+  mutate(UC_households_diff = UC_households_perc - lag(UC_households_perc)) |> 
+  ungroup()
+
+yearly_estimates_df <- dataset_part1_cont |> 
+  group_by(year) |> 
+  summarise(avg_UC_households_diff = mean(UC_households_diff, na.rm = TRUE),
+            avg_0_16_pop = mean(population_0_16, na.rm = TRUE)) |> 
+  mutate(est_increase_children_perc = avg_UC_households_diff * 0.29,
+         est_increase_children_abs = est_increase_children_perc * avg_0_16_pop / 100)
+  
+# Average number of children in poverty in 
+
+
+
+```
+
 
 #### Adding an interaction term with duration of rollout
 
@@ -249,9 +288,7 @@ data("dataset_part3")
 
 fe_model_baseline2 <- 
   feols(data = dataset_part3, 
-        children_low_income_perc ~ 
-          UC_households_perc + 
-          unemployment_perc | ltla21_code + year,
+        children_low_income_perc ~ UC_households_perc + unemployment_perc | ltla21_code + year,
         cluster = ~ltla21_code)
 
 summary(fe_model_baseline2)
@@ -317,13 +354,13 @@ ggplot(interaction_visualisation_part3, aes(x = Lone_Parents, y = Marginal_Effec
     x = "Proportion of lone parent households in the local authority",
     y = "Change in proportion of children in poverty\n for every 1ppt increase in the proportion of\n households on UC"
   ) +
-  annotate("text", x = 5, y = 0.5, label = paste("Interaction estimate:", round(beta_3_part3, 3)), size = 5, colour = "#636363") +
+  annotate("text", x = 5, y = 0.5, label = paste("Interaction estimate:", round(beta_3_part3, 3)), size = 7, colour = "#636363") +
   theme_minimal() +
   theme(
     legend.position = "none",
     panel.grid.minor = element_blank(),
-    axis.title = element_text(size = 13),
-    axis.text = element_text(size =11)
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 13)
   )
 
 ```
