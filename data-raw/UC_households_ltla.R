@@ -17,6 +17,7 @@ library(geographr)
 library(sf)
 library(readxl)
 library(httr2)
+# devtools::load_all()
 
 ltla21_noNI <- geographr::boundaries_ltla21 |>
   st_drop_geometry() |> 
@@ -48,7 +49,7 @@ UC_households_ltla <- UC_households_ltla_wide |>
                values_to = "UC_households_abs") |> 
   mutate(year = as.numeric(gsub("march_", "", year))) |> 
   left_join(households_number_ltla) |> 
-  mutate(UC_households_perc = (UC_households_abs / household_number)*100) |> 
+  mutate(UC_households_perc = (UC_households_abs / households_number)*100) |> 
   filter(between(year, 2016, 2020))
 
 # ---- Checks ----
@@ -78,7 +79,7 @@ if(nrow(unmatched_in_ltla21) > 0) {
 
 # RESULT: 17 English local authorities missing from the UC households dataset
 
-# Step 2: Ensuring there is data for all years 2016-2020 for each local authority
+# Step 2: Ensuring there is data for all years 2015-2020 for each local authority
 year_coverage <- UC_households_ltla |> 
   group_by(ltla21_code) |>
   summarize(years_count = n_distinct(year)) |>

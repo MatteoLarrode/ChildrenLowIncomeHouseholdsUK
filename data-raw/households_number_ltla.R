@@ -61,7 +61,7 @@ households_number_ltla <- households_number_ltla_04_19_raw |>
                names_to = "year", 
                values_to = "households_number") |> 
   mutate(year = as.numeric(gsub("x(\\d{4})_note_\\d+", "\\1", year))) |> 
-  filter(between(year, 2016, 2020))
+  filter(between(year, 2015, 2020))
 
 # ---- Checks ----
 # Step 1: Checking completeness of local authorities
@@ -90,18 +90,18 @@ if(nrow(unmatched_in_ltla21_noNI) > 0) {
 
 # RESULT: 6 Local Authorities missing
 
-# Step 2: Ensuring there is data for all years 2016-2020 for each local authority
+# Step 2: Ensuring there is data for all years 2015-2020 for each local authority
 year_coverage <- households_number_ltla |> 
   group_by(ltla21_code) |>
   summarize(years_count = n_distinct(year)) |>
-  filter(years_count != 5)  # Filter out those with complete data for all 5 years
+  filter(years_count != 6)  # Filter out those with complete data for all 5 years
 
 # Output the results with a message
 if(nrow(year_coverage) > 0) {
-  print("Local authorities with incomplete data across the years 2016 to 2020:")
+  print("Local authorities with incomplete data across the years 2015 to 2020:")
   print(year_coverage)
 } else {
-  print("All local authorities have complete data for each year from 2016 to 2020.")
+  print("All local authorities have complete data for each year from 2015 to 2020.")
 }
 
 # RESULT: All good

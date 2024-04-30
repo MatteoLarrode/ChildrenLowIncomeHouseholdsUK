@@ -108,7 +108,7 @@ children_low_income_ltla_wide <- read_csv("inst/extdata/children_relative_low_in
   left_join(ltla21) |>
   relocate(ltla21_code, .after = ltla21_name)
 
-# Final dataset: 2016-2020
+# Final dataset: 2015-2020
 children_low_income_ltla <- children_low_income_ltla_wide |>
   pivot_longer(
     cols = starts_with("children_low_income_abs_fye"),
@@ -122,11 +122,11 @@ children_low_income_ltla <- children_low_income_ltla_wide |>
   left_join(population_0_16) |> 
   mutate(children_low_income_perc = (children_low_income_abs / population_0_16) * 100) |> 
   filter(!is.na(children_low_income_perc),
-         between(year, 2016, 2020))
+         between(year, 2015, 2020))
 
 # ---- Checks ----
 # We exclude Northern Ireland
-ltla21 <- ltla21 |> 
+ltla21_noNI <- ltla21 |> 
   filter(!str_starts(ltla21_code, "N"))
 
 # Step 1: Checking completeness of local authorities
@@ -144,27 +144,27 @@ if(nrow(unmatched_in_children) > 0) {
 # (= missing data)
 unmatched_in_ltla21_noNI <- anti_join(ltla21_noNI, children_low_income_ltla, by = "ltla21_code")
 
-if(nrow(unmatched_in_ltla21) > 0) {
+if(nrow(unmatched_in_ltla21_noNI) > 0) {
   print("Local authorities in ltla21_noNI not found in the children low income dataset:")
-  print(unmatched_in_ltla21)
+  print(unmatched_in_ltla21_noNI)
 } else {
   print("All local authorities in ltla21_noNI are represented in the children low income dataset.")
 }
 
 # RESULT: Only Northern Ireland missing
 
-# Step 2: Ensuring there is data for all years 2016-2020 for each local authority
+# Step 2: Ensuring there is data for all years 2015-2020 for each local authority
 year_coverage <- children_low_income_ltla |> 
   group_by(ltla21_code) |>
   summarize(years_count = n_distinct(year)) |>
-  filter(years_count != 5)  # Filter out those with complete data for all 5 years
+  filter(years_count != 6)  # Filter out those with complete data for all 6 years
 
 # Output the results with a message
 if(nrow(year_coverage) > 0) {
-  print("Local authorities with incomplete data across the years 2016 to 2020:")
+  print("Local authorities with incomplete data across the years 2015 to 2020:")
   print(year_coverage)
 } else {
-  print("All local authorities have complete data for each year from 2016 to 2020.")
+  print("All local authorities have complete data for each year from 2015 to 2020.")
 }
 
 # RESULT: Missing years of data for 4 Scottish LA's (new)

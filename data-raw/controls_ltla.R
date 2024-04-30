@@ -61,7 +61,7 @@ unemployment_ltla <- unemployment_ltla_wide |>
   ) |>
   mutate(year = as.numeric(str_extract(year, "\\d{4}")),
          unemployment_perc = round(as.numeric(unemployment_perc), 2)) |> 
-  filter(between(year, 2016, 2020))
+  filter(between(year, 2015, 2020))
 
 # ---- Checks ----
 # Step 1: Checking completeness of local authorities
@@ -88,24 +88,24 @@ if(nrow(unmatched_in_ltla21_noNI) > 0) {
 
 # RESULT: 4 Local Authorities missing: Isles of Scilly, North Northamptonshire, West Northamptonshire, City of London
 
-# Step 2: Ensuring there is data for all years 2016-2020 for each local authority
+# Step 2: Ensuring there is data for all years 2015-2020 for each local authority
 year_coverage <- unemployment_ltla |> 
   group_by(ltla21_code) |>
   summarize(years_count = n_distinct(year)) |>
-  filter(years_count != 5)  # Filter out those with complete data for all 5 years
+  filter(years_count != 6)  # Filter out those with complete data for all 6 years
 
 # Output the results with a message
 if(nrow(year_coverage) > 0) {
-  print("Local authorities with incomplete data across the years 2016 to 2020:")
+  print("Local authorities with incomplete data across the years 2015 to 2020:")
   print(year_coverage)
 } else {
-  print("All local authorities have complete data for each year from 2016 to 2020.")
+  print("All local authorities have complete data for each year from 2015 to 2020.")
 }
 
 # RESULT: All good
 
 # ---- Save dataset ----
-use_data(unemployment_ltla, overwrite = TRUE)
+usethis::use_data(unemployment_ltla, overwrite = TRUE)
 
 # ---- PROPORTION OF LONE PARENT HOUSEHOLDS (2004-2019) ----
 # Get number of households from package
@@ -132,7 +132,7 @@ lone_parent_households_ltla <- read_excel(
                names_to = "year", 
                values_to = "lone_parent_households_abs") |> 
   mutate(year = as.numeric(gsub("x(\\d{4})_note_\\d+", "\\1", year))) |> 
-  filter(year >= 2016) |> 
+  filter(year >= 2015) |> 
   mutate(lone_parent_households_abs = as.numeric(lone_parent_households_abs)) |> 
   left_join(households_number_ltla) |> 
   mutate(lone_parent_households_perc = lone_parent_households_abs / households_number * 100) |> 
@@ -167,18 +167,18 @@ if(nrow(unmatched_in_ltla21_noNI) > 0) {
 
 # RESULT: 6 Local Authorities missing
 
-# Step 2: Ensuring there is data for all years 2016-2019 for each local authority
+# Step 2: Ensuring there is data for all years 2015-2019 for each local authority
 year_coverage <- lone_parent_households_ltla |> 
   group_by(ltla21_code) |>
   summarize(years_count = n_distinct(year)) |>
-  filter(years_count != 4)  # Filter out those with complete data for all 4 years
+  filter(years_count != 5)  # Filter out those with complete data for all 5 years
 
 # Output the results with a message
 if(nrow(year_coverage) > 0) {
-  print("Local authorities with incomplete data across the years 2016 to 2019:")
+  print("Local authorities with incomplete data across the years 2015 to 2019:")
   print(year_coverage)
 } else {
-  print("All local authorities have complete data for each year from 2016 to 2019.")
+  print("All local authorities have complete data for each year from 2015 to 2019.")
 }
 
 # RESULT: 15 local authorities wih missing years

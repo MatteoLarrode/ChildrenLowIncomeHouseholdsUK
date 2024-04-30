@@ -18,7 +18,7 @@ dataset_part1 <- UC_households_ltla |>
   left_join(unemployment_ltla) |> 
   select(ltla21_code, ltla21_name, year, UC_households_perc, children_low_income_perc, unemployment_perc) |> 
   filter(!is.na(UC_households_perc) & !is.na(children_low_income_perc)) |> 
-  filter(year <= 2020)
+  filter(between(year, 2016, 2020))
 
 # Save dataset
 usethis::use_data(dataset_part1, overwrite = TRUE)
