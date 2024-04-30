@@ -97,6 +97,41 @@ map_variable_ltla(pre_treatment_df, "unemployment_perc")
 map_variable_ltla(pre_treatment_df, "lone_parent_households_perc")
 ```
 
+Now let's examine the pre-treatment socio-demographic characteristics of local authorities, grouped by the quarter during which UC was introduced.
+
+```{r}
+half_year_averages <- pre_treatment_df |> 
+   mutate(
+    year = substr(first_active_quarter, 1, 4), # Extract year part from the quarter info
+    quarter = substr(first_active_quarter, 6, 7), # Extract quarter part
+    half_year_group = paste(year, ifelse(quarter %in% c("Q1", "Q2"), "H1", "H2"))
+  ) |> 
+  group_by(half_year_group) |> 
+  summarise(
+    Number_LAs = n(),
+    Avg_Children_Low_Income = mean(children_low_income_perc, na.rm = TRUE),
+    Avg_Unemployment = mean(unemployment_perc, na.rm = TRUE),
+    Avg_Lone_Parents = mean(lone_parent_households_perc, na.rm = TRUE),
+    Avg_Households = mean(households_number, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+# Calculate overall averages to add as a total row
+overall_averages <- pre_treatment_df |> 
+  summarise(
+    half_year_group = "Total",
+    Number_LAs = n(),
+    Avg_Children_Low_Income = mean(children_low_income_perc, na.rm = TRUE),
+    Avg_Unemployment = mean(unemployment_perc, na.rm = TRUE),
+    Avg_Lone_Parents = mean(lone_parent_households_perc, na.rm = TRUE),
+    Avg_Households = mean(households_number, na.rm = TRUE)
+  )
+
+balance_table <- rbind(half_year_averages, overall_averages)
+balance_table
+```
+
+This balance table gives strong support in favour of the consideration of the UC rollout as quasi-random. 
 
 ##  I) Relationship Between Households on UC and Children in Low Income Families
 
