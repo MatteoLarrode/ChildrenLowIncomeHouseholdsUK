@@ -161,7 +161,7 @@ fig1_AHC <- child_ts_AHC_raw |>
 fig1_df <- rbind(fig1_AHC, fig1_BHC)
 
 # Visualisation
-ggplot(fig1_df, aes(x = year, y = value, group = variable, color = variable)) +
+fig1 <- ggplot(fig1_df, aes(x = year, y = value, group = variable, color = variable)) +
   geom_line(linewidth = 1.75) +
   scale_color_manual(
     values = c(
@@ -258,7 +258,7 @@ fig3_df <- child_ts_AHC_raw |>
   )
 
 # Visualisation
-ggplot(fig3_df, aes(x = year, y = value, group = variable, color = variable)) +
+fig3 <- ggplot(fig3_df, aes(x = year, y = value, group = variable, color = variable)) +
   geom_line(linewidth = 1.75) +
   scale_color_manual(
     values = c(
@@ -294,27 +294,27 @@ ggplot(fig3_df, aes(x = year, y = value, group = variable, color = variable)) +
   )
 
 # ---- Figure 2 ----
-fig2_df <- read_csv("inst/extdata/europe_child_poverty.csv") |> 
-  pivot_longer(cols = -Country, names_to = "Indicator", values_to = "Value") |> 
+fig2_df <- read_csv("inst/extdata/europe_child_poverty.csv") |>
+  pivot_longer(cols = -Country, names_to = "Indicator", values_to = "Value") |>
   mutate(Highlight = ifelse(Country == "United Kingdom", "United Kingdom", "Other"))
 
-fig2_df_plot1 <- fig2_df |> 
-  filter(Indicator == "Material deprivation (% of children lacking three or more necessities)") |> 
+fig2_df_plot1 <- fig2_df |>
+  filter(Indicator == "Material deprivation (% of children lacking three or more necessities)") |>
   mutate(Country = fct_reorder(Country, Value))
 
-fig2_df_plot2 <- fig2_df |> 
-  filter(Indicator == "Poverty headcount (% of children in households below 60% median)") |> 
+fig2_df_plot2 <- fig2_df |>
+  filter(Indicator == "Poverty headcount (% of children in households below 60% median)") |>
   mutate(Country = fct_reorder(Country, Value))
 
-fig2_df_plot3 <- fig2_df |> 
-  filter(Indicator == "Persistent child poverty (% of children in poverty this year and at least two of previous three years)") |> 
+fig2_df_plot3 <- fig2_df |>
+  filter(Indicator == "Persistent child poverty (% of children in poverty this year and at least two of previous three years)") |>
   mutate(Country = fct_reorder(Country, Value))
 
-plot1 <-  
+fig2_plot1 <-
   ggplot(fig2_df_plot1, aes(x = Country, y = Value, fill = Highlight)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values = c("United Kingdom" = "#B20000", "Other" = "grey")) +
-  scale_y_continuous(expand = c(0, 0))+
+  scale_y_continuous(expand = c(0, 0)) +
   labs(title = "Material deprivation \n(% of children lacking three or more necessities)") +
   theme(
     plot.margin = margin(t = 0.5, r = 0.5, b = 0, l = 0.5, unit = "cm"),
@@ -332,13 +332,13 @@ plot1 <-
     axis.line.x = element_line(color = "gray8"),
     axis.ticks.y = element_blank(),
     axis.ticks.x = element_blank()
-  ) 
+  )
 
-plot2 <-  
+fig2_plot2 <-
   ggplot(fig2_df_plot2, aes(x = Country, y = Value, fill = Highlight)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values = c("United Kingdom" = "#B20000", "Other" = "grey")) +
-  scale_y_continuous(expand = c(0, 0))+
+  scale_y_continuous(expand = c(0, 0)) +
   labs(title = "Poverty headcount \n(% of children in households below 60% median)") +
   theme(
     plot.margin = margin(t = 0.5, r = 0.5, b = 0, l = 0.5, unit = "cm"),
@@ -356,13 +356,13 @@ plot2 <-
     axis.line.x = element_line(color = "gray8"),
     axis.ticks.y = element_blank(),
     axis.ticks.x = element_blank()
-  ) 
+  )
 
-plot3 <-  
+fig2_plot3 <-
   ggplot(fig2_df_plot3, aes(x = Country, y = Value, fill = Highlight)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values = c("United Kingdom" = "#B20000", "Other" = "grey")) +
-  scale_y_continuous(expand = c(0, 0))+
+  scale_y_continuous(expand = c(0, 0)) +
   labs(title = "Persistent child poverty \n(% of children in poverty this year and\n at least two of previous three years)") +
   theme(
     plot.margin = margin(t = 0.5, r = 0.5, b = 0, l = 0.5, unit = "cm"),
@@ -380,8 +380,8 @@ plot3 <-
     axis.line.x = element_line(color = "gray8"),
     axis.ticks.y = element_blank(),
     axis.ticks.x = element_blank()
-  ) 
+  )
 
-grid.arrange(plot1, plot2, plot3, ncol = 3)
+fig2 <- grid.arrange(fig2_plot1, fig2_plot2, fig2_plot3, ncol = 3)
 
 # ---- ANALYSIS ----

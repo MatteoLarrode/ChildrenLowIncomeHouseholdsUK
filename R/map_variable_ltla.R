@@ -13,14 +13,11 @@
 #' @import dplyr
 #' @import stringr
 #' @import ggplot2
-#' @importFrom geographr boundaries_ltla21
-#' @importFrom viridis scale_fill_viridis_c
+#' @import geographr
+#' @import viridis
 #' @importFrom sf st_make_valid
 #' @importFrom sf st_transform
 #'
-#' @examples
-#' # Example assuming 'df' is your data frame and 'population_density' is the variable of interest
-#' map_variable_ltla(df = your_data_frame, fill_variable = "population_density")
 
 map_variable_ltla <- function(df, fill_variable){
   # Load LTLA boundaries
@@ -55,7 +52,7 @@ map_variable_ltla <- function(df, fill_variable){
           legend.title = element_text(color = "#4e4d47", size = 10),
           legend.key.height = unit(1.1, 'cm'),
           legend.key.width = unit(0.3, 'cm')) +
-    scale_fill_viridis_c(option = "plasma", direction = -1, na.value = "#ECECEC") +
+    viridis::scale_fill_viridis_c(option = "plasma", direction = -1, na.value = "#ECECEC") +
     labs(
       title = map_title,
       fill = fill_variable,
