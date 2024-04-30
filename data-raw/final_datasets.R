@@ -3,6 +3,7 @@
 # devtools::load_all(".")
 library(tidyverse)
 library(geographr)
+library(lubridate)
 
 ltla21_noNI <- geographr::boundaries_ltla21 |>
   st_drop_geometry() |> 
@@ -60,11 +61,20 @@ usethis::use_data(dataset_part3, overwrite = TRUE)
 pre_treatment_df <- children_low_income_ltla |> 
   full_join(lone_parent_households_ltla) |> 
   full_join(unemployment_ltla) |> 
+  left_join(uc_first_active_month) |> 
   select(ltla21_name, ltla21_code, year, 
          children_low_income_perc, 
          households_number, lone_parent_households_perc,
-         unemployment_perc) |> 
-  filter(year == 2015)
+         unemployment_perc, first_active_date) |> 
+  filter(!is.na(children_low_income_perc)) |> 
+  filter(year == 2015) |> 
+  mutate(
+    first_active_quarter = if_else(
+      !is.na(first_active_date),
+      factor(paste0(year(first_active_date), " Q", quarter(first_active_date))),
+      NA
+    )
+  )
 
 # Save dataset
 usethis::use_data(pre_treatment_df, overwrite = TRUE)

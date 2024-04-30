@@ -80,9 +80,12 @@ The UC ‘Full Service’ rollout was staggered, being introduced in different l
 
 Let's start with mapping our pre-treatment variables, and compare them with the years of the rollout of Universal Credit. A function was created in this package to map specified variables. 
 
-```{r}
+```{r message=FALSE}
 # Dataset of pre-treatment variables
 data(pre_treatment_df)
+
+# Map of quarter of UC rollout
+map_variable_ltla(pre_treatment_df, "first_active_quarter", factor = TRUE)
 
 # Map of pre-treatment proportion in children in low income families
 map_variable_ltla(pre_treatment_df, "children_low_income_perc")

@@ -6,6 +6,7 @@
 #'
 #' @param df DataFrame containing the data to be plotted, which must include a region identifier that matches that of the 'boundaries_ltla21' dataset of the geographr package (ltla21_code or ltla21_name).
 #' @param fill_variable The name of the variable to be used for the fill aesthetic in the map. This must be provided as a string. For example, 'population_density'.
+#' @param factor Set as TRUE if the variable to be mapped is a factor (default = FALSE)
 #'
 #' @return A ggplot object representing the map with the specified variable highlighted.
 #' @export
@@ -18,7 +19,7 @@
 #' @importFrom sf st_transform
 #'
 
-map_variable_ltla <- function(df, fill_variable){
+map_variable_ltla <- function(df, fill_variable, factor = FALSE){
   # Load LTLA boundaries
   ltla_boundaries <- geographr::boundaries_ltla21 |> 
     filter(!str_starts(ltla21_code, "N"))
@@ -51,7 +52,7 @@ map_variable_ltla <- function(df, fill_variable){
           legend.title = element_text(color = "#4e4d47", size = 10),
           legend.key.height = unit(1.1, 'cm'),
           legend.key.width = unit(0.3, 'cm')) +
-    scale_fill_viridis_c(option = "plasma", direction = -1, na.value = "#ECECEC") +
+    scale_fill_viridis(option = "plasma", direction = -1, na.value = "#ECECEC", discrete = factor) +
     labs(
       title = map_title,
       fill = fill_variable,
