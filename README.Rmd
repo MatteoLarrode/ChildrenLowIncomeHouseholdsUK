@@ -78,6 +78,19 @@ If a significant effect of the rollout on children living in low income families
 
 The UC ‘Full Service’ rollout was staggered, being introduced in different local authorities at different times between 2016 and 2018 (DWP, 2018). This section examines, both using information released by the DWP, and descriptive analysis, the extent to which the UC rollout can be considered as a form of natural experiment.
 
+Let's start with mapping our pre-treatment variables, and compare them with the years of the rollout of Universal Credit. 
+
+```{r}
+# Dataset of pre-treatment variables
+pre_treatment_df <- children_low_income_ltla |> 
+  left_join(lone_parent_households_ltla) |> 
+  left_join(unemployment_ltla) |> 
+  select(ltla21_name, ltla21_code, year, 
+         children_low_income_perc, 
+         households_number, lone_parent_households_perc,
+         unemployment_perc) |> 
+  filter(year == 2015)
+```
 
 
 ##  I) Relationship Between Households on UC and Children in Low Income Families
