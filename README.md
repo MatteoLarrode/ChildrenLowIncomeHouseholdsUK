@@ -97,7 +97,7 @@ Authorities)**
     is made available by the Northern Ireland Department for
     Communities, but not yet collected in this package*
 
-#### Universal Credit Rollout: Binary variable
+#### Universal Credit Rollout: Binary variable (removed)
 
 The official [UC ‘Full Service’ transition rollout
 schedule](https://assets.publishing.service.gov.uk/media/5ab507c8e5274a1aa2d414d1/universal-credit-transition-rollout-schedule.pdf)
@@ -123,7 +123,7 @@ its limited scope, primarily involving claims from single, unemployed
 individuals without housing cost claims, thereby having minimal impact
 on children from low-income families. (Hardie, 2023: 1035).
 
-#### Universal Credit Rollout Duration: Categorical variable
+#### Universal Credit Rollout Duration: Categorical variable (needs updating)
 
 If a significant effect of the rollout on children living in low income
 families in indeed observed, this effect could be expected to vary
@@ -143,6 +143,42 @@ is measured for a financial year, so the number of months is measured
 from the month of the rollout to the middle of the financial year
 (October).
 
+## Quasi-Randomness of the UC Rollout
+
+The UC ‘Full Service’ rollout was staggered, being introduced in
+different local authorities at different times between 2016 and 2018
+(DWP, 2018). This section examines, both using information released by
+the DWP, and descriptive analysis, the extent to which the UC rollout
+can be considered as a form of natural experiment.
+
+Let’s start with mapping our pre-treatment variables, and compare them
+with the years of the rollout of Universal Credit. A function was
+created in this package to map specified variables.
+
+    # Dataset of pre-treatment variables
+    data(pre_treatment_df)
+
+    # Map of pre-treatment proportion in children in low income families
+    map_variable_ltla(pre_treatment_df, "children_low_income_perc")
+
+    ## Joining with `by = join_by(ltla21_name, ltla21_code)`
+
+![](README_files/figure-markdown_strict/unnamed-chunk-1-1.png)
+
+    # Map of pre-treatment unemployment
+    map_variable_ltla(pre_treatment_df, "unemployment_perc")
+
+    ## Joining with `by = join_by(ltla21_name, ltla21_code)`
+
+![](README_files/figure-markdown_strict/unnamed-chunk-1-2.png)
+
+    # Map of pre-treatment proportion of lone parent households
+    map_variable_ltla(pre_treatment_df, "lone_parent_households_perc")
+
+    ## Joining with `by = join_by(ltla21_name, ltla21_code)`
+
+![](README_files/figure-markdown_strict/unnamed-chunk-1-3.png)
+
 ## I) Relationship Between Households on UC and Children in Low Income Families
 
 I start with an examination of the relationship between the rollout of
@@ -158,27 +194,39 @@ income, on local authority and year.
     print(paste0("Number of unique local authorities: ", 
                  length(unique(dataset_part1$ltla21_code))))
 
-    ## [1] "Number of unique local authorities: 340"
+    ## [1] "Number of unique local authorities: 339"
 
-    head(dataset_part1, 10)
+    summary(dataset_part1)
 
-    ## # A tibble: 10 × 6
-    ##    ltla21_code ltla21_name    year UC_households_perc children_low_income_perc
-    ##    <chr>       <chr>         <dbl>              <dbl>                    <dbl>
-    ##  1 E06000047   County Durham  2016              0.914                     23.4
-    ##  2 E06000047   County Durham  2017              1.91                      26.4
-    ##  3 E06000047   County Durham  2018              3.84                      26.9
-    ##  4 E06000047   County Durham  2019              9.02                      27.3
-    ##  5 E06000047   County Durham  2020             12.4                       32.3
-    ##  6 E06000005   Darlington     2016              0.717                     21.7
-    ##  7 E06000005   Darlington     2017              2.06                      24.8
-    ##  8 E06000005   Darlington     2018              2.33                      26.8
-    ##  9 E06000005   Darlington     2019              7.56                      26.6
-    ## 10 E06000005   Darlington     2020             12.5                       32.0
-    ## # ℹ 1 more variable: unemployment_perc <dbl>
+    ##  ltla21_code        ltla21_name             year      UC_households_perc
+    ##  Length:1691        Length:1691        Min.   :2016   Min.   : 0.0000   
+    ##  Class :character   Class :character   1st Qu.:2017   1st Qu.: 0.9125   
+    ##  Mode  :character   Mode  :character   Median :2018   Median : 2.3233   
+    ##                                        Mean   :2018   Mean   : 4.0132   
+    ##                                        3rd Qu.:2019   3rd Qu.: 6.1238   
+    ##                                        Max.   :2020   Max.   :22.2155   
+    ##  children_low_income_perc unemployment_perc
+    ##  Min.   : 6.122           Min.   : 1.510   
+    ##  1st Qu.:14.902           1st Qu.: 3.080   
+    ##  Median :19.178           Median : 3.900   
+    ##  Mean   :20.124           Mean   : 4.143   
+    ##  3rd Qu.:24.061           3rd Qu.: 4.985   
+    ##  Max.   :47.981           Max.   :10.080
 
-There is data for a total of 340 local authorities covering 2016 to
-2022, leading to 2380 observations across England, Wales and Scotland.
+    sd(dataset_part1$UC_households_perc)
+
+    ## [1] 4.050261
+
+    sd(dataset_part1$children_low_income_perc)
+
+    ## [1] 7.322668
+
+    sd(dataset_part1$unemployment_perc)
+
+    ## [1] 1.379188
+
+There is data for a total of 339 local authorities covering 2016 to
+2020, leading to 1691 observations across England, Wales and Scotland.
 
 ### Initial observation
 
@@ -195,11 +243,11 @@ There is data for a total of 340 local authorities covering 2016 to
     ## # A tibble: 5 × 4
     ##    year median_children_low_income lower_IQR_children_l…¹ upper_IQR_children_l…²
     ##   <dbl>                      <dbl>                  <dbl>                  <dbl>
-    ## 1  2016                       17.8                   14.1                   22.2
-    ## 2  2017                       18.7                   14.6                   23.0
-    ## 3  2018                       19.6                   15.1                   24.5
-    ## 4  2019                       19.5                   15.1                   24.1
-    ## 5  2020                       20.8                   16.0                   26.5
+    ## 1  2016                       17.8                   14.1                   22.3
+    ## 2  2017                       18.7                   14.7                   23.1
+    ## 3  2018                       19.7                   15.1                   24.5
+    ## 4  2019                       19.6                   15.1                   24.1
+    ## 5  2020                       20.8                   16.0                   26.6
     ## # ℹ abbreviated names: ¹​lower_IQR_children_low_income,
     ## #   ²​upper_IQR_children_low_income
 
@@ -234,7 +282,7 @@ across local authorities (2017)**
 
     ## `geom_smooth()` using formula = 'y ~ x'
 
-![](README_files/figure-markdown_strict/unnamed-chunk-3-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-4-1.png)
 
 Figure 1 is a binned scatterplot of the proportion of households
 claiming Universal Credit (x-axis) and the proportion of children living
@@ -262,23 +310,21 @@ local authorities.*
     summary(fe_model_baseline)
 
     ## OLS estimation, Dep. Var.: children_low_income_perc
-    ## Observations: 1,696 
-    ## Fixed-effects: ltla21_code: 340,  year: 5
+    ## Observations: 1,691 
+    ## Fixed-effects: ltla21_code: 339,  year: 5
     ## Standard-errors: Clustered (ltla21_code) 
     ##                    Estimate Std. Error t value  Pr(>|t|)    
-    ## UC_households_perc 0.314418    0.03461 9.08451 < 2.2e-16 ***
+    ## UC_households_perc 0.317203   0.034769 9.12305 < 2.2e-16 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## RMSE: 1.22367     Adj. R2: 0.964942
-    ##                 Within R2: 0.120166
+    ## RMSE: 1.22401     Adj. R2: 0.964925
+    ##                 Within R2: 0.121326
 
     # Add unemployment control
     fe_model1 <- 
       feols(data = dataset_part1, 
             children_low_income_perc ~ UC_households_perc + unemployment_perc | ltla21_code + year,
             cluster = ~ltla21_code)
-
-    ## NOTE: 5 observations removed because of NA values (RHS: 5).
 
     summary(fe_model1)
 
@@ -294,6 +340,32 @@ local authorities.*
     ## RMSE: 1.16618     Adj. R2: 0.968137
     ##                 Within R2: 0.202392
 
+    # Weird negative coefficient for unemployment, could there be an interaction?
+    fe_model_extra <- 
+      feols(data = dataset_part1, 
+            children_low_income_perc ~ 
+              unemployment_perc * UC_households_perc | ltla21_code + year,
+            cluster = ~ltla21_code)
+
+    summary(fe_model_extra)
+
+    ## OLS estimation, Dep. Var.: children_low_income_perc
+    ## Observations: 1,691 
+    ## Fixed-effects: ltla21_code: 339,  year: 5
+    ## Standard-errors: Clustered (ltla21_code) 
+    ##                                       Estimate Std. Error   t value   Pr(>|t|)
+    ## unemployment_perc                    -1.093469   0.096830 -11.29264  < 2.2e-16
+    ## UC_households_perc                   -0.305324   0.085728  -3.56153 4.2160e-04
+    ## unemployment_perc:UC_households_perc  0.093389   0.014837   6.29424 9.5849e-10
+    ##                                         
+    ## unemployment_perc                    ***
+    ## UC_households_perc                   ***
+    ## unemployment_perc:UC_households_perc ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## RMSE: 1.1176     Adj. R2: 0.970714
+    ##                Within R2: 0.267455
+
 The results of this first model show that for every 1 percentage point
 increase in households receiving UC, there is a 0.315 percentage point
 increase in the proportion of children living in low income families.
@@ -301,32 +373,83 @@ This relationship is statistically significant at all conventional
 thresholds. This estimate is not strongly affected, neither in its scale
 nor in its statistical significance when controlling for unemployment
 rates. This finding reinforces the claim that the parallel trends
-assumption more plausible is this situation.
+assumption holds is this situation.
 
-#### Adding an interaction term with duration of rollout
+For context, we can estimate the increase in the absolute number of
+children living in low income households, in a local authority with the
+average number of children. For that, we need:
 
-I add a variable for the number of months UC has been rolled out in the
+-   to calculate the average percentage point increase of households on
+    UC from the previous year,
+-   to multiply that by 0.29 to get the estimated percentage point
+    increase in the proportion of children in low income families,
+-   to get the average number of children each year.
+
+<!-- -->
+
+    dataset_part1_cont <- UC_households_ltla |>
+      left_join(children_low_income_ltla) |>
+      left_join(unemployment_ltla) |>
+      filter(year <= 2020) |>
+      filter(!is.na(UC_households_perc) & !is.na(children_low_income_perc) & !is.na(unemployment_perc)) |>
+      select(
+        ltla21_code, ltla21_name,
+        year, UC_households_perc,
+        population_0_16, children_low_income_perc
+      )
+
+    ## Joining with `by = join_by(ltla21_name, ltla21_code, year)`
+    ## Joining with `by = join_by(ltla21_name, ltla21_code, year)`
+
+    # Calculate the year-to-year difference in UC_households_perc for each LA
+    dataset_part1_cont <- dataset_part1_cont |> 
+      arrange(ltla21_code, year) |> 
+      group_by(ltla21_code) |> 
+      mutate(UC_households_perc_diff = UC_households_perc - lag(UC_households_perc),
+             children_low_income_perc_diff = children_low_income_perc - lag(children_low_income_perc)) |> 
+      ungroup()
+
+    yearly_estimates_df <- dataset_part1_cont |> 
+      group_by(year) |> 
+      summarise(avg_UC_households_perc_diff = mean(UC_households_perc_diff, na.rm = TRUE),
+                avg_children_low_income_perc_diff = mean(children_low_income_perc_diff, na.rm = TRUE),
+                avg_0_16_pop = mean(population_0_16, na.rm = TRUE)) |> 
+      mutate(est_increase_children_perc = avg_UC_households_perc_diff * 0.29,
+             est_increase_children_abs = est_increase_children_perc * avg_0_16_pop / 100)
+
+## II) Adding an interaction term with duration of rollout
+
+I add a variable for the number of years UC has been rolled out in the
 local authority. This is calculating for each year by doing:
 01-01-year - month of the UC rollout.
 
     data("dataset_part2")
 
-    head(dataset_part2)
+    summary(dataset_part2)
 
-    ## # A tibble: 6 × 8
-    ##   ltla21_code ltla21_name    year UC_households_perc children_low_income_perc
-    ##   <chr>       <chr>         <dbl>              <dbl>                    <dbl>
-    ## 1 E06000047   County Durham  2016              0.914                     23.4
-    ## 2 E06000047   County Durham  2017              1.91                      26.4
-    ## 3 E06000047   County Durham  2018              3.84                      26.9
-    ## 4 E06000047   County Durham  2019              9.02                      27.3
-    ## 5 E06000047   County Durham  2020             12.4                       32.3
-    ## 6 E06000005   Darlington     2016              0.717                     21.7
-    ## # ℹ 3 more variables: unemployment_perc <dbl>, months_active <dbl>,
-    ## #   years_active <dbl>
+    ##  ltla21_code        ltla21_name             year      UC_households_perc
+    ##  Length:1691        Length:1691        Min.   :2016   Min.   : 0.0000   
+    ##  Class :character   Class :character   1st Qu.:2017   1st Qu.: 0.9125   
+    ##  Mode  :character   Mode  :character   Median :2018   Median : 2.3233   
+    ##                                        Mean   :2018   Mean   : 4.0132   
+    ##                                        3rd Qu.:2019   3rd Qu.: 6.1238   
+    ##                                        Max.   :2020   Max.   :22.2155   
+    ##                                                                         
+    ##  children_low_income_perc unemployment_perc months_active   years_active   
+    ##  Min.   : 6.122           Min.   : 1.510    Min.   : 0.0   Min.   :0.0000  
+    ##  1st Qu.:14.902           1st Qu.: 3.080    1st Qu.: 0.0   1st Qu.:0.0000  
+    ##  Median :19.178           Median : 3.900    Median : 9.0   Median :0.0000  
+    ##  Mean   :20.124           Mean   : 4.143    Mean   :13.5   Mean   :0.8715  
+    ##  3rd Qu.:24.061           3rd Qu.: 4.985    3rd Qu.:26.0   3rd Qu.:2.0000  
+    ##  Max.   :47.981           Max.   :10.080    Max.   :62.0   Max.   :5.0000  
+    ##                                             NA's   :10     NA's   :10
+
+    sd(dataset_part2$years_active, na.rm = TRUE)
+
+    ## [1] 1.060168
 
 Now let’s add the interaction term in the fixed-effects model to see if
-the effect of the UC rollout is moderated by the number of months
+the effect of the UC rollout is moderated by the number of years
 Universal Credit has been active in the local authority. Standard errors
 are still clustered by local authority.
 
@@ -339,7 +462,7 @@ are still clustered by local authority.
               unemployment_perc | ltla21_code + year,
             cluster = ~ltla21_code)
 
-    ## NOTE: 15 observations removed because of NA values (RHS: 15).
+    ## NOTE: 10 observations removed because of NA values (RHS: 10).
 
     summary(fe_model2)
 
@@ -397,12 +520,13 @@ Now on with the visualisation:
       geom_line() +
       geom_point() +
       geom_errorbar(aes(ymin = CI_lower, ymax = CI_upper), width = 0.1) +
+      scale_y_continuous(limits = c(0, 0.6)) +
       theme_minimal() + # This sets a minimal theme for the plot
       labs(
         x = "Number of years UC has been active in the local authority",
         y = "Change in proportion of children in poverty\n for every 1ppt increase in the proportion of\n households on UC"
       ) +
-      annotate("text", x = 1, y = 0.48, label = paste("Interaction estimate:", round(beta_3, 3)), size = 5, colour = "#636363") +
+      annotate("text", x = 1.2, y = 0.55, label = paste("Interaction estimate:", round(beta_3, 3)), size = 6, colour = "#636363") +
       theme_minimal() +
       theme(
         legend.position = "none",
@@ -411,9 +535,9 @@ Now on with the visualisation:
         axis.text = element_text(size =11)
       )
 
-![](README_files/figure-markdown_strict/unnamed-chunk-8-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-10-1.png)
 
-### Impact of family type on the effect of UC rollout on child poverty
+## III) Impact of family type on the effect of UC rollout on child poverty
 
 The literature suggests specific design features of Universal Credit may
 have affected lone parents disproportionately.
@@ -425,28 +549,41 @@ data on the percentage of lone parents households in local authorities
 
     data("dataset_part3")
 
+    dataset_part3 <- dataset_part3 |> 
+      filter(!is.na(lone_parent_households_perc))
+
+    summary(dataset_part3$lone_parent_households_perc)
+
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##   1.075   7.692   9.722   9.893  11.787  21.569
+
+    sd(dataset_part3$lone_parent_households_perc, na.rm = TRUE)
+
+    ## [1] 3.058537
+
+    # Baseline with new number of years
     fe_model_baseline2 <- 
       feols(data = dataset_part3, 
             children_low_income_perc ~ 
               UC_households_perc + 
+              lone_parent_households_perc +
               unemployment_perc | ltla21_code + year,
             cluster = ~ltla21_code)
-
-    ## NOTE: 4 observations removed because of NA values (RHS: 4).
 
     summary(fe_model_baseline2)
 
     ## OLS estimation, Dep. Var.: children_low_income_perc
-    ## Observations: 1,352 
+    ## Observations: 1,339 
     ## Fixed-effects: ltla21_code: 339,  year: 4
     ## Standard-errors: Clustered (ltla21_code) 
-    ##                     Estimate Std. Error   t value   Pr(>|t|)    
-    ## UC_households_perc  0.207862   0.029679   7.00358 1.3539e-11 ***
-    ## unemployment_perc  -0.953126   0.090898 -10.48571  < 2.2e-16 ***
+    ##                              Estimate Std. Error    t value   Pr(>|t|)    
+    ## UC_households_perc           0.206252   0.029744   6.934303 2.0822e-11 ***
+    ## lone_parent_households_perc  0.006354   0.018892   0.336336 7.3683e-01    
+    ## unemployment_perc           -0.950180   0.091297 -10.407587  < 2.2e-16 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## RMSE: 1.03568     Adj. R2: 0.971143
-    ##                 Within R2: 0.200176
+    ## RMSE: 1.03414     Adj. R2: 0.971242
+    ##                 Within R2: 0.199067
 
     fe_model3 <- 
       feols(data = dataset_part3, 
@@ -456,8 +593,6 @@ data on the percentage of lone parents households in local authorities
               UC_households_perc * lone_parent_households_perc +
               unemployment_perc | ltla21_code + year,
             cluster = ~ltla21_code)
-
-    ## NOTE: 17 observations removed because of NA values (RHS: 17).
 
     summary(fe_model3)
 
@@ -495,8 +630,8 @@ Let’s visualise this interaction term.
     # Summary of the values for the proportions of lone parent households
     summary(dataset_part3$lone_parent_households_perc)
 
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-    ##   1.075   7.692   9.722   9.893  11.787  21.569      17
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##   1.075   7.692   9.722   9.893  11.787  21.569
 
     # Extract coefficients
     beta_1_part3 <- coef(fe_model3)["UC_households_perc"]
@@ -517,7 +652,7 @@ Let’s visualise this interaction term.
     # Build the dataset (95% confidence interval)
     interaction_visualisation_part3 <-
       tibble(
-        Lone_Parents = 1:25,
+        Lone_Parents = 1:22,
         Marginal_Effect = beta_1_part3 + (beta_3_part3 * Lone_Parents),
         Variance = var_beta_1_part3 + Lone_Parents^2 * var_beta_3_part3 + 2 * Lone_Parents * cov_beta_1_beta_3_part3,
         CI_lower = Marginal_Effect - 1.96 * sqrt(Variance),
@@ -536,16 +671,16 @@ Now on with the visualisation:
         x = "Proportion of lone parent households in the local authority",
         y = "Change in proportion of children in poverty\n for every 1ppt increase in the proportion of\n households on UC"
       ) +
-      annotate("text", x = 5, y = 0.5, label = paste("Interaction estimate:", round(beta_3_part3, 3)), size = 5, colour = "#636363") +
+      annotate("text", x = 5, y = 0.5, label = paste("Interaction estimate:", round(beta_3_part3, 3)), size = 7, colour = "#636363") +
       theme_minimal() +
       theme(
         legend.position = "none",
         panel.grid.minor = element_blank(),
-        axis.title = element_text(size = 13),
-        axis.text = element_text(size =11)
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 13)
       )
 
-![](README_files/figure-markdown_strict/unnamed-chunk-11-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-14-1.png)
 
 Another method to investigate the differentiated impact of UC on lone
 parent households, rather than to consider family types as a local
@@ -555,7 +690,200 @@ different dependent variables using data released by the DWP.
 Indeed, the number of children living in low income households is
 available for different family types.
 
-### Fixed-Effects Model - Binary Independent Variable (UC Full Service Rollout) (// Hardie, 2023)
+## Robustness and sensitivity analysis
+
+### Linear regression analysis assumptions
+
+First, let’s check the assumptions underlying regression analysis.
+
+    residuals_model3 <- data.frame(residuals(fe_model3)) |> 
+      rename(residuals = "residuals.fe_model3.") |> 
+      mutate(standardised_residuals = scale(residuals))
+
+**Linearity**
+
+    predicted_values <- predict(fe_model3)
+
+    # Plot observed vs. predicted values
+    plot(dataset_part3$children_low_income_perc, predicted_values, main = "Observed vs. Predicted",
+         xlab = "Observed values", ylab = "Predicted values")
+    abline(0, 1)
+
+![](README_files/figure-markdown_strict/unnamed-chunk-16-1.png) This is
+a scatter plot of the observed values against the predicted values from
+the final model. Ideally, if the model’s predictions are perfect, all
+points would lie on the 45-degree line where the predicted values equal
+the observed values. In this plot, the points seem to lie around a line
+that could be close to this ideal. This suggests that there is a linear
+relationship between the predictors and the response variable, which is
+a good sign.
+
+However, it’s important to note that as the observed values increase,
+the spread of the predictions also seems to increase slightly. This
+could be a hint of heteroscedasticity, which is a violation of one of
+the regression assumptions, and it suggests that the variance of the
+errors may not be constant across all levels of the predictors.
+
+**Homoscedasticity**
+
+    # Residuals vs. Fitted values
+    plot(predicted_values, residuals(fe_model3), main = "Residuals vs. Fitted",
+         xlab = "Fitted values", ylab = "Residuals")
+    abline(h = 0, col = "red")
+
+![](README_files/figure-markdown_strict/unnamed-chunk-17-1.png)
+
+This plot shows the residuals (the differences between observed and
+predicted values) plotted against the fitted (predicted) values. For
+this plot, a good sign is a random scatter of points, without any
+discernible pattern, centered around the horizontal line at zero. This
+would indicate that the residuals have constant variance
+(homoscedasticity) and are independent of the fitted values.
+
+In this plot once again, while the residuals are centered around the
+horizontal line at zero (which is good), there seems to be a pattern
+where the spread of the residuals increases with the fitted values. This
+is once again an indication of heteroscedasticity.
+
+Both plots together suggest that while there is a linear relationship
+between the predictors and the response variable, the assumption of
+homoscedasticity may not be fully satisfied. It might be helpful to also
+conduct a formal test for homoscedasticity, such as the Breusch-Pagan
+test, and consider transforming the response variable or using a
+different model that accounts for the heteroscedastic nature of the
+data, such as generalized least squares or robust standard errors.
+
+**Normality of residuals**
+
+    # QQ plot for residuals
+    qqnorm(residuals(fe_model3))
+    qqline(residuals(fe_model3), col = "red")
+
+![](README_files/figure-markdown_strict/unnamed-chunk-18-1.png)
+
+The QQ (Quantile-Quantile) plot compares the quantiles of the observed
+residuals with the quantiles expected under a normal distribution. The
+plot displayed a fairly consistent alignment of the data points with the
+45-degree reference line in the central section, indicating an
+approximate adherence to normality within this range. However, the tails
+of the distribution, particularly the right tail, exhibit a noticeable
+departure from the reference line (in a “S” shape), suggesting the
+presence of heavier tails than those typically observed in a normal
+distribution.
+
+**Independence of residuals**
+
+**Absence of multicollinearity**
+
+Let’s start with a correlation matrix.
+
+    # Create a correlation matrix of the predictor variables.
+    cor_matrix <- cor(dataset_part3[, c("UC_households_perc", "lone_parent_households_perc", "unemployment_perc")])
+
+    # Plot the correlation matrix
+    corrplot(cor_matrix, method = "number", type = "upper")
+
+![](README_files/figure-markdown_strict/unnamed-chunk-19-1.png)
+
+-   UC\_households\_perc and lone\_parent\_households\_perc: The
+    correlation coefficient is 0.19, indicating a weak positive
+    relationship. This means that as the percentage of UC households
+    increases, there is a slight tendency for the percentage of lone
+    parent households to increase as well, but the relationship is not
+    strong.
+
+-   UC\_households\_perc and unemployment\_perc: Similarly, there is a
+    correlation coefficient of 0.19, which also indicates a weak
+    positive relationship. The percentage of UC households and the
+    unemployment percentage tend to increase together, but again, the
+    relationship is not pronounced.
+
+-   lone\_parent\_households\_perc and unemployment\_perc: The
+    correlation coefficient here is 0.52, suggesting a moderate positive
+    relationship. As the percentage of lone parent households increases,
+    the unemployment percentage tends to increase more noticeably. This
+    is a more substantial correlation compared to the other pairs but
+    still not so high as to typically indicate a severe risk of
+    multicollinearity on its own.
+
+Based on these correlation coefficients, it does not appear that there
+is a high risk of multicollinearity between these variables.
+Multicollinearity is usually of concern when correlation coefficients
+are above 0.7 or 0.8.
+
+### Outliers
+
+The residuals vs. fitted plot does indicate the presence of potential
+outliers, as some residuals are quite far from the main cluster centered
+around the horizontal line at zero. Let us detect them:
+
+    dataset_part3$residuals <- residuals(fe_model3)
+    dataset_part3$residuals_standardised <- scale(dataset_part3$residuals)[,1]
+
+Unfortunately, it no ‘hatvalues’ (leverage) method has been implemented
+for estimations with fixed-effects, making it difficult to assess the
+influence of these outliers on regression results.
+
+Another solution to evaluate the extent to which results of the model
+are sensitive to changes in the sample is to conduct a Monte Carlo
+simulation. This technique could allow to understand the variability in
+estimates due to sample variation. First, 100 datasets are created by
+resampling from the original data. The model is fit to each simulated
+dataset, and we can observe the distribution of the estimates.
+
+### Monte-carlo simulation of coefficients with different samples
+
+    # Number of simulations
+    n_sim <- 100
+
+    unique_ltlas <- unique(dataset_part3$ltla21_code)
+    n_ltlas <- length(unique_ltlas)
+
+    coefficients_df <- tibble(
+      "UC_households_perc" = numeric(), 
+      "lone_parent_households_perc" = numeric(),
+      "unemployment_perc" = numeric(), 
+      "UC_households_perc_x_lone_parent_households_perc" = numeric())
+
+    for (i in 1:n_sim) {
+      # Sample local authorities with replacement
+      sampled_ltlas <- sample(unique_ltlas, size = 250, replace = TRUE)
+      
+      # Get rows from the dataset corresponding to the sampled local authorities
+      sampled_data <- dataset_part3[dataset_part3$ltla21_code %in% sampled_ltlas, ]
+      
+      # Fit the model to the sampled data
+      sim_model <- feols(data = sampled_data, 
+                         children_low_income_perc ~ 
+                           UC_households_perc + 
+                           lone_parent_households_perc +
+                           UC_households_perc * lone_parent_households_perc +
+                           unemployment_perc | ltla21_code + year,
+                         cluster = ~ltla21_code)
+      
+      # Store the coefficients
+      coefficients_df <- coefficients_df |>
+        add_row(
+          tibble_row(
+            UC_households_perc = coef(sim_model)[1],
+            lone_parent_households_perc = coef(sim_model)[2],
+            unemployment_perc = coef(sim_model)[3],
+            UC_households_perc_x_lone_parent_households_perc = coef(sim_model)[4]
+            )
+          )
+    }
+
+    # Create a density plot of the simulation results for UC_households_perc_x_lone_parent_households_perc
+    ggplot(coefficients_df, aes(x = UC_households_perc_x_lone_parent_households_perc)) +
+      geom_density(fill = "blue", alpha = 0.5) +
+      theme_minimal() +
+      labs(title = "Density of Interaction Term from Monte Carlo Simulation",
+           x = "UC_households_perc * lone_parent_households_perc",
+           y = "Density")
+
+![](README_files/figure-markdown_strict/unnamed-chunk-21-1.png)
+
+## Fixed-Effects Model - Binary Independent Variable (UC Full Service Rollout) (// Hardie, 2023)
 
 In the next model, the Universal Credit rollout is studied as a binary
 treatment across all local authorities. This additional analysis is
@@ -588,60 +916,60 @@ to run placebo tests, which will be detailed later.
             children_low_income_perc ~ uc_rolled_out | ltla21_code + year,
             cluster = ~ltla21_code)
 
-    ## NOTE: 372 observations removed because of NA values (LHS: 372).
+    ## NOTE: 14 observations removed because of NA values (LHS: 14).
 
     summary(uc_children_binary_15mo_fem)
 
     ## OLS estimation, Dep. Var.: children_low_income_perc
-    ## Observations: 1,800 
-    ## Fixed-effects: ltla21_code: 358,  year: 5
+    ## Observations: 2,158 
+    ## Fixed-effects: ltla21_code: 358,  year: 6
     ## Standard-errors: Clustered (ltla21_code) 
     ##                Estimate Std. Error  t value Pr(>|t|) 
-    ## uc_rolled_out -0.054449   0.097739 -0.55708  0.57782 
+    ## uc_rolled_out -0.136806   0.117227 -1.16702  0.24398 
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## RMSE: 1.29384     Adj. R2: 0.959917
-    ##                 Within R2: 8.002e-5
+    ## RMSE: 1.40343     Adj. R2: 0.952834
+    ##                 Within R2: 3.803e-4
 
     uc_children_binary_12mo_fem <- 
       feols(data = uc_rollout_ltla_12mo_joined, 
             children_low_income_perc ~ uc_rolled_out | ltla21_code + year,
             cluster = ~ltla21_code)
 
-    ## NOTE: 372 observations removed because of NA values (LHS: 372).
+    ## NOTE: 14 observations removed because of NA values (LHS: 14).
 
     summary(uc_children_binary_12mo_fem)
 
     ## OLS estimation, Dep. Var.: children_low_income_perc
-    ## Observations: 1,800 
-    ## Fixed-effects: ltla21_code: 358,  year: 5
+    ## Observations: 2,158 
+    ## Fixed-effects: ltla21_code: 358,  year: 6
     ## Standard-errors: Clustered (ltla21_code) 
     ##               Estimate Std. Error  t value Pr(>|t|) 
-    ## uc_rolled_out 0.136059    0.13793 0.986434  0.32459 
+    ## uc_rolled_out 0.081464   0.165619 0.491879  0.62311 
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## RMSE: 1.29354     Adj. R2: 0.959936
-    ##                 Within R2: 5.492e-4
+    ## RMSE: 1.40359     Adj. R2: 0.952823
+    ##                 Within R2: 1.496e-4
 
     uc_children_binary_6mo_fem <- 
       feols(data = uc_rollout_ltla_6mo_joined, 
             children_low_income_perc ~ uc_rolled_out | ltla21_code + year,
             cluster = ~ltla21_code)
 
-    ## NOTE: 372 observations removed because of NA values (LHS: 372).
+    ## NOTE: 14 observations removed because of NA values (LHS: 14).
 
     summary(uc_children_binary_6mo_fem)
 
     ## OLS estimation, Dep. Var.: children_low_income_perc
-    ## Observations: 1,800 
-    ## Fixed-effects: ltla21_code: 358,  year: 5
+    ## Observations: 2,158 
+    ## Fixed-effects: ltla21_code: 358,  year: 6
     ## Standard-errors: Clustered (ltla21_code) 
     ##                Estimate Std. Error   t value Pr(>|t|) 
-    ## uc_rolled_out -0.018257   0.113194 -0.161292  0.87195 
+    ## uc_rolled_out -0.095722   0.132766 -0.720984  0.47139 
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## RMSE: 1.29389     Adj. R2: 0.959914
-    ##                 Within R2: 1.052e-5
+    ## RMSE: 1.40354     Adj. R2: 0.952826
+    ##                 Within R2: 2.194e-4
 
 None of the models displays a statistically significant effect of the
 rollout of Universal Credit on the proportion of children in low income

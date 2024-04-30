@@ -78,18 +78,20 @@ If a significant effect of the rollout on children living in low income families
 
 The UC ‘Full Service’ rollout was staggered, being introduced in different local authorities at different times between 2016 and 2018 (DWP, 2018). This section examines, both using information released by the DWP, and descriptive analysis, the extent to which the UC rollout can be considered as a form of natural experiment.
 
-Let's start with mapping our pre-treatment variables, and compare them with the years of the rollout of Universal Credit. 
+Let's start with mapping our pre-treatment variables, and compare them with the years of the rollout of Universal Credit. A function was created in this package to map specified variables. 
 
 ```{r}
 # Dataset of pre-treatment variables
-pre_treatment_df <- children_low_income_ltla |> 
-  left_join(lone_parent_households_ltla) |> 
-  left_join(unemployment_ltla) |> 
-  select(ltla21_name, ltla21_code, year, 
-         children_low_income_perc, 
-         households_number, lone_parent_households_perc,
-         unemployment_perc) |> 
-  filter(year == 2015)
+data(pre_treatment_df)
+
+# Map of pre-treatment proportion in children in low income families
+map_variable_ltla(pre_treatment_df, "children_low_income_perc")
+
+# Map of pre-treatment unemployment
+map_variable_ltla(pre_treatment_df, "unemployment_perc")
+
+# Map of pre-treatment proportion of lone parent households
+map_variable_ltla(pre_treatment_df, "lone_parent_households_perc")
 ```
 
 
@@ -105,9 +107,12 @@ data("dataset_part1")
 print(paste0("Number of unique local authorities: ", 
              length(unique(dataset_part1$ltla21_code))))
 
-head(dataset_part1, 10)
+summary(dataset_part1)
+sd(dataset_part1$UC_households_perc)
+sd(dataset_part1$children_low_income_perc)
+sd(dataset_part1$unemployment_perc)
 ```
-There is data for a total of 340 local authorities covering 2016 to 2020, leading to 1700 observations across England, Wales and Scotland.
+There is data for a total of 339 local authorities covering 2016 to 2020, leading to 1691 observations across England, Wales and Scotland.
 
 ### Initial observation
 ```{r}
@@ -229,7 +234,8 @@ This is calculating for each year by doing: 01-01-year - month of the UC rollout
 ```{r}
 data("dataset_part2")
 
-head(dataset_part2)
+summary(dataset_part2)
+sd(dataset_part2$years_active, na.rm = TRUE)
 ```
 
 Now let's add the interaction term in the fixed-effects model to see if the effect of the UC rollout is moderated by the number of years Universal Credit has been active in the local authority. Standard errors are still clustered by local authority.
@@ -316,6 +322,13 @@ data("dataset_part3")
 dataset_part3 <- dataset_part3 |> 
   filter(!is.na(lone_parent_households_perc))
 
+summary(dataset_part3$lone_parent_households_perc)
+sd(dataset_part3$lone_parent_households_perc, na.rm = TRUE)
+```
+
+
+
+```{r}
 # Baseline with new number of years
 fe_model_baseline2 <- 
   feols(data = dataset_part3, 
@@ -367,7 +380,7 @@ cov_beta_1_beta_3_part3 <- vcov_matrix_part3[
 # Build the dataset (95% confidence interval)
 interaction_visualisation_part3 <-
   tibble(
-    Lone_Parents = 1:25,
+    Lone_Parents = 1:22,
     Marginal_Effect = beta_1_part3 + (beta_3_part3 * Lone_Parents),
     Variance = var_beta_1_part3 + Lone_Parents^2 * var_beta_3_part3 + 2 * Lone_Parents * cov_beta_1_beta_3_part3,
     CI_lower = Marginal_Effect - 1.96 * sqrt(Variance),

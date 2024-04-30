@@ -14,7 +14,6 @@
 #' @import stringr
 #' @import ggplot2
 #' @import geographr
-#' @import viridis
 #' @importFrom sf st_make_valid
 #' @importFrom sf st_transform
 #'
@@ -39,9 +38,9 @@ map_variable_ltla <- function(df, fill_variable){
     theme_void() +
     theme(text = element_text(color = "#22211d"), 
           plot.margin = margin(0, 1, 0, 1, "cm"),
-          plot.background = element_rect(fill = "#f5f5f2", color = NA),
-          panel.background = element_rect(fill = "#f5f5f2", color = NA), 
-          legend.background = element_rect(fill = "#f5f5f2", color = NA),
+          plot.background = element_rect(fill = "white", color = NA),
+          panel.background = element_rect(fill = "white", color = NA), 
+          legend.background = element_rect(fill = "white", color = NA),
           plot.title = element_text(size = 16, hjust = 0.01, color = "#4e4d47",
                                     margin = margin(b = -0.1, t = 0.4, l = 2, unit = "cm")),
           plot.subtitle = element_text(size = 14, hjust = 0.01, color = "#4e4d47",
@@ -52,7 +51,7 @@ map_variable_ltla <- function(df, fill_variable){
           legend.title = element_text(color = "#4e4d47", size = 10),
           legend.key.height = unit(1.1, 'cm'),
           legend.key.width = unit(0.3, 'cm')) +
-    viridis::scale_fill_viridis_c(option = "plasma", direction = -1, na.value = "#ECECEC") +
+    scale_fill_viridis_c(option = "plasma", direction = -1, na.value = "#ECECEC") +
     labs(
       title = map_title,
       fill = fill_variable,
