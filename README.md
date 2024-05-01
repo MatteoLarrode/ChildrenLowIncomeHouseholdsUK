@@ -156,28 +156,79 @@ with the years of the rollout of Universal Credit. A function was
 created in this package to map specified variables.
 
     # Dataset of pre-treatment variables
+    pkgload::load_all(".")
     data(pre_treatment_df)
+
+    # Map of quarter of UC rollout
+    map_variable_ltla(pre_treatment_df, "first_active_quarter", factor = TRUE)
+
+![](README_files/figure-markdown_strict/unnamed-chunk-1-1.png)
 
     # Map of pre-treatment proportion in children in low income families
     map_variable_ltla(pre_treatment_df, "children_low_income_perc")
 
-    ## Joining with `by = join_by(ltla21_name, ltla21_code)`
-
-![](README_files/figure-markdown_strict/unnamed-chunk-1-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-1-2.png)
 
     # Map of pre-treatment unemployment
     map_variable_ltla(pre_treatment_df, "unemployment_perc")
 
-    ## Joining with `by = join_by(ltla21_name, ltla21_code)`
-
-![](README_files/figure-markdown_strict/unnamed-chunk-1-2.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-1-3.png)
 
     # Map of pre-treatment proportion of lone parent households
     map_variable_ltla(pre_treatment_df, "lone_parent_households_perc")
 
-    ## Joining with `by = join_by(ltla21_name, ltla21_code)`
+![](README_files/figure-markdown_strict/unnamed-chunk-1-4.png)
 
-![](README_files/figure-markdown_strict/unnamed-chunk-1-3.png)
+Now let’s examine the pre-treatment socio-demographic characteristics of
+local authorities, grouped by the quarter during which UC was
+introduced.
+
+    half_year_averages <- pre_treatment_df |> 
+       mutate(
+        year = substr(first_active_quarter, 1, 4), # Extract year part from the quarter info
+        quarter = substr(first_active_quarter, 6, 7), # Extract quarter part
+        half_year_group = paste(year, ifelse(quarter %in% c("Q1", "Q2"), "H1", "H2"))
+      ) |> 
+      group_by(half_year_group) |> 
+      summarise(
+        Number_LAs = n(),
+        Avg_Children_Low_Income = mean(children_low_income_perc, na.rm = TRUE),
+        Avg_Unemployment = mean(unemployment_perc, na.rm = TRUE),
+        Avg_Lone_Parents = mean(lone_parent_households_perc, na.rm = TRUE),
+        Avg_Households = mean(households_number, na.rm = TRUE),
+        .groups = 'drop'
+      )
+
+    # Calculate overall averages to add as a total row
+    overall_averages <- pre_treatment_df |> 
+      summarise(
+        half_year_group = "Total",
+        Number_LAs = n(),
+        Avg_Children_Low_Income = mean(children_low_income_perc, na.rm = TRUE),
+        Avg_Unemployment = mean(unemployment_perc, na.rm = TRUE),
+        Avg_Lone_Parents = mean(lone_parent_households_perc, na.rm = TRUE),
+        Avg_Households = mean(households_number, na.rm = TRUE)
+      )
+
+    balance_table <- rbind(half_year_averages, overall_averages)
+    balance_table
+
+    ## # A tibble: 9 × 6
+    ##   half_year_group Number_LAs Avg_Children_Low_Income Avg_Unemployment
+    ##   <chr>                <int>                   <dbl>            <dbl>
+    ## 1 2015 H2                  3                    17.1             6.47
+    ## 2 2016 H1                 12                    16.6             5.07
+    ## 3 2016 H2                 17                    16.7             5.34
+    ## 4 2017 H1                 17                    20.0             5.92
+    ## 5 2017 H2                 78                    17.7             5.54
+    ## 6 2018 H1                 67                    18.8             5.87
+    ## 7 2018 H2                160                    17.3             5.27
+    ## 8 NA H2                    5                    15.1             4.15
+    ## 9 Total                  359                    17.7             5.47
+    ## # ℹ 2 more variables: Avg_Lone_Parents <dbl>, Avg_Households <dbl>
+
+This balance table gives strong support in favour of the consideration
+of the UC rollout as quasi-random.
 
 ## I) Relationship Between Households on UC and Children in Low Income Families
 
@@ -282,7 +333,7 @@ across local authorities (2017)**
 
     ## `geom_smooth()` using formula = 'y ~ x'
 
-![](README_files/figure-markdown_strict/unnamed-chunk-4-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-5-1.png)
 
 Figure 1 is a binned scatterplot of the proportion of households
 claiming Universal Credit (x-axis) and the proportion of children living
@@ -485,7 +536,7 @@ increase in the proportion of children in low income families for every
 1ppt increase in the proportion of households on UC), using the
 interaction term:
 
-    # Extract coefficients
+    # Extract coefficients (fe_model2 is the fixed effects model including interaction term with years of UC active)
     beta_1 <- coef(fe_model2)["UC_households_perc"]
     beta_3 <- coef(fe_model2)["UC_households_perc:years_active"]
 
@@ -535,7 +586,7 @@ Now on with the visualisation:
         axis.text = element_text(size =11)
       )
 
-![](README_files/figure-markdown_strict/unnamed-chunk-10-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-11-1.png)
 
 ## III) Impact of family type on the effect of UC rollout on child poverty
 
@@ -641,13 +692,9 @@ Let’s visualise this interaction term.
     # Get the variance-covariance matrix of the model's estimates
     vcov_matrix_part3 <- vcov(fe_model3)
 
-    var_beta_1_part3 <- vcov_matrix_part3[
-      "UC_households_perc", "UC_households_perc"]
-    var_beta_3_part3 <- vcov_matrix_part3[
-      "UC_households_perc:lone_parent_households_perc",
-      "UC_households_perc:lone_parent_households_perc"]
-    cov_beta_1_beta_3_part3 <- vcov_matrix_part3[
-      "UC_households_perc", "UC_households_perc:lone_parent_households_perc"]
+    var_beta_1_part3 <- vcov_matrix_part3["UC_households_perc", "UC_households_perc"]
+    var_beta_3_part3 <- vcov_matrix_part3["UC_households_perc:lone_parent_households_perc", "UC_households_perc:lone_parent_households_perc"]
+    cov_beta_1_beta_3_part3 <- vcov_matrix_part3["UC_households_perc", "UC_households_perc:lone_parent_households_perc"]
 
     # Build the dataset (95% confidence interval)
     interaction_visualisation_part3 <-
@@ -680,7 +727,7 @@ Now on with the visualisation:
         axis.text = element_text(size = 13)
       )
 
-![](README_files/figure-markdown_strict/unnamed-chunk-14-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-15-1.png)
 
 Another method to investigate the differentiated impact of UC on lone
 parent households, rather than to consider family types as a local
@@ -709,7 +756,7 @@ First, let’s check the assumptions underlying regression analysis.
          xlab = "Observed values", ylab = "Predicted values")
     abline(0, 1)
 
-![](README_files/figure-markdown_strict/unnamed-chunk-16-1.png) This is
+![](README_files/figure-markdown_strict/unnamed-chunk-17-1.png) This is
 a scatter plot of the observed values against the predicted values from
 the final model. Ideally, if the model’s predictions are perfect, all
 points would lie on the 45-degree line where the predicted values equal
@@ -731,7 +778,7 @@ errors may not be constant across all levels of the predictors.
          xlab = "Fitted values", ylab = "Residuals")
     abline(h = 0, col = "red")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-17-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-18-1.png)
 
 This plot shows the residuals (the differences between observed and
 predicted values) plotted against the fitted (predicted) values. For
@@ -759,7 +806,7 @@ data, such as generalized least squares or robust standard errors.
     qqnorm(residuals(fe_model3))
     qqline(residuals(fe_model3), col = "red")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-18-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-19-1.png)
 
 The QQ (Quantile-Quantile) plot compares the quantiles of the observed
 residuals with the quantiles expected under a normal distribution. The
@@ -783,7 +830,7 @@ Let’s start with a correlation matrix.
     # Plot the correlation matrix
     corrplot(cor_matrix, method = "number", type = "upper")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-19-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-20-1.png)
 
 -   UC\_households\_perc and lone\_parent\_households\_perc: The
     correlation coefficient is 0.19, indicating a weak positive
@@ -881,7 +928,7 @@ dataset, and we can observe the distribution of the estimates.
            x = "UC_households_perc * lone_parent_households_perc",
            y = "Density")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-21-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-22-1.png)
 
 ## Fixed-Effects Model - Binary Independent Variable (UC Full Service Rollout) (// Hardie, 2023)
 

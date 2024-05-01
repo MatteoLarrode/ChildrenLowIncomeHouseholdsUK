@@ -4,12 +4,14 @@
 \alias{map_variable_ltla}
 \title{Map a Variable at the Local Authority Level}
 \usage{
-map_variable_ltla(df, fill_variable)
+map_variable_ltla(df, fill_variable, factor = FALSE)
 }
 \arguments{
 \item{df}{DataFrame containing the data to be plotted, which must include a region identifier that matches that of the 'boundaries_ltla21' dataset of the geographr package (ltla21_code or ltla21_name).}
 
 \item{fill_variable}{The name of the variable to be used for the fill aesthetic in the map. This must be provided as a string. For example, 'population_density'.}
+
+\item{factor}{Set as TRUE if the variable to be mapped is a factor (default = FALSE)}
 }
 \value{
 A ggplot object representing the map with the specified variable highlighted.

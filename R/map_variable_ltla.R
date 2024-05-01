@@ -14,6 +14,7 @@
 #' @import dplyr
 #' @import stringr
 #' @import ggplot2
+#' @import viridis
 #' @import geographr
 #' @importFrom sf st_make_valid
 #' @importFrom sf st_transform
