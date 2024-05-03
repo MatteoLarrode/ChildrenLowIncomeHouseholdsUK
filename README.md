@@ -785,7 +785,7 @@ Now on with the visualisation:
         axis.text = element_text(size =11)
       )
 
-![](README_files/figure-markdown_strict/unnamed-chunk-14-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-15-1.png)
 
 ## 3.3. Impact of family type on the effect of UC rollout on child poverty
 
@@ -835,6 +835,7 @@ data on the percentage of lone parents households in local authorities
     ## RMSE: 1.03414     Adj. R2: 0.971242
     ##                 Within R2: 0.199067
 
+    # Adding the interaction term
     fe_model3 <- 
       feols(data = dataset_part3, 
             children_low_income_perc ~ 
@@ -926,7 +927,7 @@ Now on with the visualisation:
         axis.text = element_text(size = 13)
       )
 
-![](README_files/figure-markdown_strict/unnamed-chunk-19-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-21-1.png)
 
 ## 4. Robustness and sensitivity analysis
 
@@ -947,7 +948,7 @@ First, let’s check the assumptions underlying regression analysis.
          xlab = "Observed values", ylab = "Predicted values")
     abline(0, 1)
 
-![](README_files/figure-markdown_strict/unnamed-chunk-21-1.png) This is
+![](README_files/figure-markdown_strict/unnamed-chunk-23-1.png) This is
 a scatter plot of the observed values against the predicted values from
 the final model. Ideally, if the model’s predictions are perfect, all
 points would lie on the 45-degree line where the predicted values equal
@@ -969,7 +970,7 @@ errors may not be constant across all levels of the predictors.
          xlab = "Fitted values", ylab = "Residuals")
     abline(h = 0, col = "red")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-22-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-24-1.png)
 
 This plot shows the residuals (the differences between observed and
 predicted values) plotted against the fitted (predicted) values. For
@@ -997,7 +998,7 @@ data, such as generalized least squares or robust standard errors.
     qqnorm(residuals(fe_model3))
     qqline(residuals(fe_model3), col = "red")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-23-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-25-1.png)
 
 The QQ (Quantile-Quantile) plot compares the quantiles of the observed
 residuals with the quantiles expected under a normal distribution. The
@@ -1021,7 +1022,7 @@ Let’s start with a correlation matrix.
     # Plot the correlation matrix
     corrplot(cor_matrix, method = "number", type = "upper")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-24-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-26-1.png)
 
 -   UC\_households\_perc and lone\_parent\_households\_perc: The
     correlation coefficient is 0.19, indicating a weak positive
@@ -1119,4 +1120,4 @@ dataset, and we can observe the distribution of the estimates.
            x = "UC_households_perc * lone_parent_households_perc",
            y = "Density")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-26-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-28-1.png)

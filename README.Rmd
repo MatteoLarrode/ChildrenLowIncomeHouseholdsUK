@@ -259,7 +259,9 @@ fe_model_baseline <-
         cluster = ~ltla21_code)
 
 summary(fe_model_baseline)
+```
 
+```{r}
 # Add unemployment control
 fe_model1 <- 
   feols(data = dataset_part1, 
@@ -422,8 +424,10 @@ fe_model_baseline2 <-
         cluster = ~ltla21_code)
 
 summary(fe_model_baseline2)
+```
 
-
+```{r}
+# Adding the interaction term
 fe_model3 <- 
   feols(data = dataset_part3, 
         children_low_income_perc ~ 
