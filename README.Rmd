@@ -3,12 +3,31 @@ title: "The Effects of Welfare Reform on Child Poverty in the UK"
 author: "Matteo Larrode"
 date: "`r Sys.Date()`"
 output: md_document
+
 ---
-# The Effects of Welfare Reform on Child Poverty in the UK
+# Dissertation: Impoverishing Families? Exploring the Impact of Universal Credit on Child Poverty and Lone Parent Households
 
-In this dissertation, I conduct a quantitative analysis of the effect of welfare policy changes in the UK on the proportion of children living in relative low-income families. 
+This repository is structured as an R package, designed to provide a comprehensive analysis of the impact of the rollout of Universal Credit on child poverty in the UK. The package includes distributed datasets, all of which have been thoroughly documented to enhance understanding and ease of use. It also includes a function to map the different variables distributed by the package.
 
-This Markdown includes the data analysis component of this dissertation. It will first include some exploratory data analysis, and then will be used to run the other components of the quantitative analysis of the impact of UK benefit policies on the number of children living in relative low income families. Note that the collection and cleaning of the data that will be used here is done in scripts in the `data-raw` folder of this repository, and the datasets are available in the `data` folder.
+**Installation**
+
+You can install the latest version of this package directly from GitHub using the following code in R:
+
+```{r eval=FALSE}
+# install.packages("devtools")
+devtools::install_github("MatteoLarrode/ChildrenLowIncomeHouseholdsUK")
+```
+
+**Repository Structure**
+
+- `README`: Provides context on the study, data collection, and contains the quantitative analysis. It also includes a range of visualisations, offering an overview and insights derived from the data. The code only uses datasets distributed by this package, so this README file, and consequently the whole analysis of the dissertation, is replicable. 
+
+- `/data`: Includes all the datasets used in the analysis, and distributed by the package.
+
+- `/data-raw`: Includes the code used to create the datasets. Most data is downloaded from the internet by the code itself. In the case of datasets downloaded from DWP's Stat-Xplore platform, the .csv files used in the data cleaning are available at inst/extdata. 
+
+- `inst/code`: Stores the code for the models (which is also present in the README), and the code for the creation of the visualisations included in the literature review. 
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -20,24 +39,24 @@ library(viridis)
 library(fixest)
 library(corrplot)
 
-# pkgload::load_all(".")
+pkgload::load_all(".")
 ```
 
-## Data
+## 1. Data
 
 ### Outcome: Children Living in Relative Low Income Families
 
+*Associated dataset*: `children_low_income_ltla`
+
 Data is downloaded from [Stat-Xplore](https://stat-xplore.dwp.gov.uk/webapi/jsf/login.xhtml), the Department of Work and Pensions (DWP) data distribution platform.
 
-- Low income is a family whose equivalised income is below 60 per cent of median household incomes. For Absolute low income involves, the median of the 2010/11 year is used. For Relative low income, the comparison is made to the median of the current year. This dissertation focuses on Relative low income because it better adjusts for economic changes. Relative income is Before Housing Costs (BHC) and includes contributions from earning, state support and pensions. Equivalisation adjusts incomes for household size and composition.
+- Low income is a family whose equivalised income is below 60 per cent of median household incomes. For Absolute low income involves, the median of the 2010/11 year is used. For Relative low income, the comparison is made to the median of the current year. Relative income is Before Housing Costs (BHC) and includes contributions from earning, state support and pensions. Equivalisation adjusts incomes for household size and composition.
 
 - A family must have claimed Child Benefit and at least one other household benefit (Universal Credit, tax credits or Housing Benefit) at any point in the year to be classed as low income in these statistics
 
 - Children are defined as dependent individuals aged under 16; or aged 16 to 19 in full-time non-advanced education.
 
 Visit the dedicated [DWP page](https://www.gov.uk/government/publications/children-in-low-income-families-local-area-statistics-background-information-and-methodology/background-information-and-methodology-children-in-low-income-families-local-area-statistics) for further information. 
-
-#### Relative measure
 
 To get the **proportion** of children in low income families, I used [yearly population estimates](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/estimatesofthepopulationforenglandandwales) provided by the Office for National Statistics (for England and Wales), and [time series data](https://www.nrscotland.gov.uk/statistics-and-data/statistics/statistics-by-theme/population/population-estimates/mid-year-population-estimates/population-estimates-time-series-data) from the National Records of Scotland. Because not all individuals aged 16 to 19 years old are counted as children in the CiRLIF measure, population counts are summed for individuals aged 0-15 years old, and used to divide the absolute measure of CiRLIF provided by the DWP.
 
@@ -46,15 +65,14 @@ To get the **proportion** of children in low income families, I used [yearly pop
 - England: English local authority districts (309)
 - Wales: Unitary authorities (22)
 - Scotland: Scottish council areas (32)
-- Northern Ireland: District council areas (11)
 
 ### Main Independent Variable: Households on Universal Credit
+
+*Associated dataset*: `UC_households_ltla`
 
 Data for the number of households who have a calculated entitlement for Universal Credit is downloaded from [Stat-Xplore](https://stat-xplore.dwp.gov.uk/webapi/jsf/login.xhtml), the Department of Work and Pensions (DWP) data distribution platform.
 
 Data is also available regarding the family type, number and age of children, and work status of the household claiming Universal Credit. For further information, visit the dedicated [DWP page](https://www.gov.uk/government/publications/universal-credit-statistics-background-information-and-methodology/universal-credit-statistics-background-information-and-methodology).
-
-#### Relative measure
 
 To calculate the proportion of households on Universal Credit for each local authority, numbers of households on UC were divided by historical annual estimates of the number of households published by the Office for National Statistics: [2004-2019](https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/adhocs/13586estimatednumberofhouseholdsbyselectedhouseholdtypeslocalauthoritiesinenglandandwalescountiesandregionsofenglandscottishcouncilareasandgreatbritainconstituentcountries2004to2019), [2020](https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/adhocs/14432estimatednumberofhouseholdsingreatbritaininnuts1nuts3englishandwelshlocalauthoritiesandscottishcouncilareas2020), [2021](https://www.ons.gov.uk/datasets/TS041/editions/2021/versions/3).
 
@@ -63,19 +81,46 @@ To calculate the proportion of households on Universal Credit for each local aut
 - England: English local authority districts (309)
 - Wales: Unitary authorities (22)
 - Scotland: Scottish council areas (32)
-- *[Data for Northern Ireland](https://www.communities-ni.gov.uk/articles/universal-credit-statistics) is made available by the Northern Ireland Department for Communities, but not yet collected in this package*
 
-#### Universal Credit Rollout: Binary variable (removed)
+### Universal Credit Rollout Length
 
-The official [UC 'Full Service' transition rollout schedule](https://assets.publishing.service.gov.uk/media/5ab507c8e5274a1aa2d414d1/universal-credit-transition-rollout-schedule.pdf) published by the DWP was used to create explanatory variables measuring cross-local authority variation in the timing of the UC rollout (Hardie, 2023: 1035). The first is a binary variable indicating whether UC ‘Full Service’ had rolled out yet in each year in each local authority in the sample (coded: 0 = ‘no', 1 = ‘yes’). To mitigate bias and ensure robustness in the conversion of the monthly Universal Credit rollout data to annual data for the analysis, I coded multiple variables with different thresholds — December of the previous year, April, and October — to determine the minimum duration of Universal Credit presence within a financial year required for a local authority to be classified as having implemented UC. This first binary variable allows to study the staggered rollout of UC as a natural experiment, with a delayed treatment across local authorities.
+*Associated dataset*: `uc_first_active_month`
+
+The official [UC 'Full Service' transition rollout schedule](https://assets.publishing.service.gov.uk/media/5ab507c8e5274a1aa2d414d1/universal-credit-transition-rollout-schedule.pdf) published by the DWP was used to create an additional explanatory variables measuring the number of years UC has been introduced in all local authorities.
 
 The 'Full Service' iteration of Universal Credit was chosen for analysis because it represents the comprehensive form of UC, making it accessible to all types of claimants, including those with housing expenses. The initial 'Live Service' variant was not considered in this study due to its limited scope, primarily involving claims from single, unemployed individuals without housing cost claims, thereby having minimal impact on children from low-income families. (Hardie, 2023: 1035). 
 
-#### Universal Credit Rollout Duration: Categorical variable (needs updating)
+**Geography: Local authorities (called ltla for Lower Tier Local Authorities)**
 
-If a significant effect of the rollout on children living in low income families in indeed observed, this effect could be expected to vary depending on how long UC has been rollout out in the local authority. One possible scenario is that the effect fades over time because the administrative system adapts. Conversely, as time goes on, more people are reached by Universal Credit, and the effect on children in low income families could become larger. For the purpose of studying the long-term effect of the rollout, we build a secondary independent variable ‘UC Full Service Rollout by Rollout Length’; a categorical variable indicating whether UC ‘Full Service’ had rolled out yet in each month in each local authority , and if so for how long (coded: 0 = ‘No (pre-rollout)’ 1 = ‘Yes (1-6 months post)’, 2 = ‘Yes (7-12 months post)’, 3 = ‘Yes (13-24 months post)’, and 4 = 'Yes(25+ months post)') (Hardie, 2023: 1035). The proportion of children in low income families is measured for a financial year, so the number of months is measured from the month of the rollout to the middle of the financial year (October). 
+- England: English local authority districts (309)
+- Wales: Unitary authorities (22)
+- Scotland: Scottish council areas (32)
 
-## Quasi-Randomness of the UC Rollout
+### Unemployment
+
+*Associated dataset*: `unemployment_ltla`
+
+Data is collected from [model-based estimates of unemployment rates for local authorities produced by the Office for National Statistics for England, Wales, and Scotland](https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/datasets/modelledunemploymentforlocalandunitaryauthoritiesm01/current)
+
+**Geography: Local authorities (called ltla for Lower Tier Local Authorities)**
+
+- England: English local authority districts (309)
+- Wales: Unitary authorities (22)
+- Scotland: Scottish council areas (32)
+
+### Lone-parent households
+
+*Associated dataset*: `lone_parent_households`
+
+For the analysis of the differentiated impact of UC on lone parent families, ONS data on the [proportion of lone household](https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/adhocs/13586estimatednumberofhouseholdsbyselectedhouseholdtypeslocalauthoritiesinenglandandwalescountiesandregionsofenglandscottishcouncilareasandgreatbritainconstituentcountries2004to2019) was collected for the 2016-2019 period for English, Scottish and Welsh local authorities.
+
+**Geography: Local authorities (called ltla for Lower Tier Local Authorities)**
+
+- England: English local authority districts (309)
+- Wales: Unitary authorities (22)
+- Scotland: Scottish council areas (32)
+
+## 2. Quasi-Randomness of the UC Rollout
 
 The UC ‘Full Service’ rollout was staggered, being introduced in different local authorities at different times between 2016 and 2018 (DWP, 2018). This section examines, both using information released by the DWP, and descriptive analysis, the extent to which the UC rollout can be considered as a form of natural experiment.
 
@@ -83,7 +128,6 @@ Let's start with mapping our pre-treatment variables, and compare them with the 
 
 ```{r message=FALSE}
 # Dataset of pre-treatment variables
-pkgload::load_all(".")
 data(pre_treatment_df)
 
 # Map of quarter of UC rollout
@@ -135,7 +179,7 @@ balance_table
 
 This balance table gives strong support in favour of the consideration of the UC rollout as quasi-random. 
 
-##  I) Relationship Between Households on UC and Children in Low Income Families
+##  3.1. Relationship Between Households on UC and Children in Low Income Families
 
 I start with an examination of the relationship between the rollout of Universal Credit, more precisely the proportion of households on Universal Credit, and the proportion of children living in low income household. 
 
@@ -266,7 +310,7 @@ yearly_estimates_df <- dataset_part1_cont |>
 ```
 
 
-## II) Adding an interaction term with duration of rollout
+## 3.2. Adding an interaction term with duration of rollout
 
 I add a variable for the number of years UC has been rolled out in the local authority. 
 This is calculating for each year by doing: 01-01-year - month of the UC rollout.
@@ -350,7 +394,7 @@ ggplot(interaction_visualisation, aes(x = Year, y = Marginal_Effect)) +
 
 ```
 
-## III) Impact of family type on the effect of UC rollout on child poverty  
+## 3.3. Impact of family type on the effect of UC rollout on child poverty  
 
 The literature suggests specific design features of Universal Credit may have affected lone parents disproportionately. 
 
@@ -365,7 +409,6 @@ dataset_part3 <- dataset_part3 |>
 summary(dataset_part3$lone_parent_households_perc)
 sd(dataset_part3$lone_parent_households_perc, na.rm = TRUE)
 ```
-
 
 
 ```{r}
@@ -448,12 +491,8 @@ ggplot(interaction_visualisation_part3, aes(x = Lone_Parents, y = Marginal_Effec
 
 ```
 
-Another method to investigate the differentiated impact of UC on lone parent households, rather than to consider family types as a local authority level independent variable, is to consider to model two different dependent variables using data released by the DWP. 
 
-Indeed, the number of children living in low income households is available for different family types. 
-
-
-## Robustness and sensitivity analysis
+## 4. Robustness and sensitivity analysis
 
 ### Linear regression analysis assumptions
 
