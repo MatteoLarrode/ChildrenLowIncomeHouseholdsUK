@@ -513,6 +513,8 @@ unemployment rate.
 *Note: Standard errors are clustered for repeated observations within
 local authorities.*
 
+First, a baseline model:
+
     fe_model_baseline <- 
       feols(data = dataset_part1, 
             children_low_income_perc ~ UC_households_perc | ltla21_code + year,
@@ -530,6 +532,8 @@ local authorities.*
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## RMSE: 1.22401     Adj. R2: 0.964925
     ##                 Within R2: 0.121326
+
+Now adding the control for unemployment:
 
     # Add unemployment control
     fe_model1 <- 
@@ -811,6 +815,8 @@ data on the percentage of lone parents households in local authorities
 
     ## [1] 3.058537
 
+First, a baseline model:
+
     # Baseline with lone parents
     fe_model_baseline2 <- 
       feols(data = dataset_part3, 
@@ -834,6 +840,9 @@ data on the percentage of lone parents households in local authorities
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## RMSE: 1.03414     Adj. R2: 0.971242
     ##                 Within R2: 0.199067
+
+Now adding lone parents X proportion of households on UC as an
+interaction term:
 
     # Adding the interaction term
     fe_model3 <- 

@@ -252,6 +252,7 @@ A first baseline fixed effects (time and space) model allows to explore whether 
 
 *Note: Standard errors are clustered for repeated observations within local authorities.*
 
+First, a baseline model:
 ```{r}
 fe_model_baseline <- 
   feols(data = dataset_part1, 
@@ -261,6 +262,7 @@ fe_model_baseline <-
 summary(fe_model_baseline)
 ```
 
+Now adding the control for unemployment:
 ```{r}
 # Add unemployment control
 fe_model1 <- 
@@ -412,7 +414,7 @@ summary(dataset_part3$lone_parent_households_perc)
 sd(dataset_part3$lone_parent_households_perc, na.rm = TRUE)
 ```
 
-
+First, a baseline model:
 ```{r}
 # Baseline with lone parents
 fe_model_baseline2 <- 
@@ -426,6 +428,7 @@ fe_model_baseline2 <-
 summary(fe_model_baseline2)
 ```
 
+Now adding lone parents X proportion of households on UC as an interaction term:
 ```{r}
 # Adding the interaction term
 fe_model3 <- 
