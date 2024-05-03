@@ -7,7 +7,7 @@ output: md_document
 ---
 # Dissertation: Impoverishing Families? Exploring the Impact of Universal Credit on Child Poverty and Lone Parent Households
 
-This repository is structured as an R package, designed to provide a comprehensive analysis of the impact of the rollout of Universal Credit on child poverty in the UK. The package includes distributed datasets, all of which have been thoroughly documented to enhance understanding and ease of use. It also includes a function to map the different variables distributed by the package.
+This repository is structured as an R package, designed to provide a comprehensive analysis of the impact of the rollout of Universal Credit on child poverty in the UK. The package distributes all datasets used in the analysis, which have been thoroughly documented to enhance understanding and ease of use. It also includes a function to map the different variables distributed by the package.
 
 **Installation**
 
@@ -20,13 +20,13 @@ devtools::install_github("MatteoLarrode/ChildrenLowIncomeHouseholdsUK")
 
 **Repository Structure**
 
-- `README`: Provides context on the study, data collection, and contains the quantitative analysis. It also includes a range of visualisations, offering an overview and insights derived from the data. The code only uses datasets distributed by this package, so this README file, and consequently the whole analysis of the dissertation, is replicable. 
+- `README`: Provides information on data collection process, and contains the quantitative analysis. It also includes a range of visualisations, offering an overview and insights derived from the data. The code only uses datasets distributed by this package, so this README file, and consequently the whole analysis of the dissertation, is replicable. 
 
 - `/data`: Includes all the datasets used in the analysis, and distributed by the package.
 
-- `/data-raw`: Includes the code used to create the datasets. Most data is downloaded from the internet by the code itself. In the case of datasets downloaded from DWP's Stat-Xplore platform, the .csv files used in the data cleaning are available at inst/extdata. 
+- `/data-raw`: Includes the code used to create the datasets. Most data is downloaded from the internet by the code itself. In the case of datasets downloaded from DWP's [Stat-Xplore](https://stat-xplore.dwp.gov.uk/webapi/jsf/login.xhtml?invalidSession=true&reason=Session+not+established) platform, the .csv files used in the data cleaning are available at inst/extdata. 
 
-- `inst/code`: Stores the code for the models (which is also present in the README), and the code for the creation of the visualisations included in the literature review. 
+- `inst/code`: Stores the code for the models (also present in the README) and the code for the creation of the visualisations included in the literature review. 
 
 
 ```{r setup, include=FALSE}
@@ -38,6 +38,7 @@ library(tidyverse)
 library(viridis)
 library(fixest)
 library(corrplot)
+library(knitr)
 
 pkgload::load_all(".")
 ```
@@ -100,7 +101,7 @@ The 'Full Service' iteration of Universal Credit was chosen for analysis because
 
 *Associated dataset*: `unemployment_ltla`
 
-Data is collected from [model-based estimates of unemployment rates for local authorities produced by the Office for National Statistics for England, Wales, and Scotland](https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/datasets/modelledunemploymentforlocalandunitaryauthoritiesm01/current)
+Data is collected from [model-based estimates of unemployment rates](https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/datasets/modelledunemploymentforlocalandunitaryauthoritiesm01/current) for local authorities released by the Office for National Statistics for England, Wales, and Scotland.
 
 **Geography: Local authorities (called ltla for Lower Tier Local Authorities)**
 
@@ -112,7 +113,7 @@ Data is collected from [model-based estimates of unemployment rates for local au
 
 *Associated dataset*: `lone_parent_households`
 
-For the analysis of the differentiated impact of UC on lone parent families, ONS data on the [proportion of lone household](https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/adhocs/13586estimatednumberofhouseholdsbyselectedhouseholdtypeslocalauthoritiesinenglandandwalescountiesandregionsofenglandscottishcouncilareasandgreatbritainconstituentcountries2004to2019) was collected for the 2016-2019 period for English, Scottish and Welsh local authorities.
+For the analysis of the differentiated impact of UC on lone parent families, ONS data on the [proportion of lone household](https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/adhocs/13586estimatednumberofhouseholdsbyselectedhouseholdtypeslocalauthoritiesinenglandandwalescountiesandregionsofenglandscottishcouncilareasandgreatbritainconstituentcountries2004to2019) was collected and cleaned for the 2016-2019 period for English, Scottish and Welsh local authorities.
 
 **Geography: Local authorities (called ltla for Lower Tier Local Authorities)**
 
@@ -174,10 +175,15 @@ overall_averages <- pre_treatment_df |>
   )
 
 balance_table <- rbind(half_year_averages, overall_averages)
-balance_table
+```
+
+```{r}
+kable(balance_table)
 ```
 
 This balance table gives strong support in favour of the consideration of the UC rollout as quasi-random. 
+
+Hypotheses regarding the relationship between UC rollout and child poverty are tested using fixed-effects regression models. This section has given support for the consideration of UC as a quasi-randomly attributed treatment; it was introduced over time in certain local authorities and not in other comparable areas, which will serve as counterfactuals. The models used next in this analysis will include both local authority fixed-effects and time fixed-effects. Local authority fixed-effects allow to control for unobserved time-invariant differences between local authorities. Time fixed-effects control for time-varying but location-invariant unobserved variables.
 
 ##  3.1. Relationship Between Households on UC and Children in Low Income Families
 
@@ -208,7 +214,7 @@ summary_statistics <- dataset_part1 |>
     upper_IQR_children_low_income = quantile(children_low_income_perc, 0.75)
   )
 
-print(summary_statistics)
+kable(summary_statistics)
 ```
 
 There is a noticeable increase in the proportion of children living in relative low income households. 
@@ -261,15 +267,6 @@ fe_model1 <-
         cluster = ~ltla21_code)
 
 summary(fe_model1)
-
-# Weird negative coefficient for unemployment, could there be an interaction?
-fe_model_extra <- 
-  feols(data = dataset_part1, 
-        children_low_income_perc ~ 
-          unemployment_perc * UC_households_perc | ltla21_code + year,
-        cluster = ~ltla21_code)
-
-summary(fe_model_extra)
 ```
 
 The results of this first model show that for every 1 percentage point increase in households receiving UC, there is a 0.315 percentage point increase in the proportion of children living in low income families. This relationship is statistically significant at all conventional thresholds. This estimate is not strongly affected, neither in its scale nor in its statistical significance when controlling for unemployment rates. This finding reinforces the claim that the parallel trends assumption holds is this situation.
@@ -309,6 +306,9 @@ yearly_estimates_df <- dataset_part1_cont |>
          est_increase_children_abs = est_increase_children_perc * avg_0_16_pop / 100)
 ```
 
+```{r}
+kable(yearly_estimates_df)
+```
 
 ## 3.2. Adding an interaction term with duration of rollout
 
@@ -443,7 +443,9 @@ Let's visualise this interaction term.
 ```{r}
 # Summary of the values for the proportions of lone parent households
 summary(dataset_part3$lone_parent_households_perc)
+```
 
+```{r}
 # Extract coefficients
 beta_1_part3 <- coef(fe_model3)["UC_households_perc"]
 beta_3_part3 <- coef(fe_model3)["UC_households_perc:lone_parent_households_perc"]

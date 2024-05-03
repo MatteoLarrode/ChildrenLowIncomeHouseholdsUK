@@ -2,10 +2,10 @@
 
 This repository is structured as an R package, designed to provide a
 comprehensive analysis of the impact of the rollout of Universal Credit
-on child poverty in the UK. The package includes distributed datasets,
-all of which have been thoroughly documented to enhance understanding
-and ease of use. It also includes a function to map the different
-variables distributed by the package.
+on child poverty in the UK. The package distributes all datasets used in
+the analysis, which have been thoroughly documented to enhance
+understanding and ease of use. It also includes a function to map the
+different variables distributed by the package.
 
 **Installation**
 
@@ -17,7 +17,7 @@ using the following code in R:
 
 **Repository Structure**
 
--   `README`: Provides context on the study, data collection, and
+-   `README`: Provides information on data collection process, and
     contains the quantitative analysis. It also includes a range of
     visualisations, offering an overview and insights derived from the
     data. The code only uses datasets distributed by this package, so
@@ -29,12 +29,14 @@ using the following code in R:
 
 -   `/data-raw`: Includes the code used to create the datasets. Most
     data is downloaded from the internet by the code itself. In the case
-    of datasets downloaded from DWP’s Stat-Xplore platform, the .csv
-    files used in the data cleaning are available at inst/extdata.
+    of datasets downloaded from DWP’s
+    [Stat-Xplore](https://stat-xplore.dwp.gov.uk/webapi/jsf/login.xhtml?invalidSession=true&reason=Session+not+established)
+    platform, the .csv files used in the data cleaning are available at
+    inst/extdata.
 
--   `inst/code`: Stores the code for the models (which is also present
-    in the README), and the code for the creation of the visualisations
-    included in the literature review.
+-   `inst/code`: Stores the code for the models (also present in the
+    README) and the code for the creation of the visualisations included
+    in the literature review.
 
 ## 1. Data
 
@@ -142,10 +144,10 @@ Authorities)**
 
 *Associated dataset*: `unemployment_ltla`
 
-Data is collected from [model-based estimates of unemployment rates for
-local authorities produced by the Office for National Statistics for
-England, Wales, and
-Scotland](https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/datasets/modelledunemploymentforlocalandunitaryauthoritiesm01/current)
+Data is collected from [model-based estimates of unemployment
+rates](https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/datasets/modelledunemploymentforlocalandunitaryauthoritiesm01/current)
+for local authorities released by the Office for National Statistics for
+England, Wales, and Scotland.
 
 **Geography: Local authorities (called ltla for Lower Tier Local
 Authorities)**
@@ -161,8 +163,8 @@ Authorities)**
 For the analysis of the differentiated impact of UC on lone parent
 families, ONS data on the [proportion of lone
 household](https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/adhocs/13586estimatednumberofhouseholdsbyselectedhouseholdtypeslocalauthoritiesinenglandandwalescountiesandregionsofenglandscottishcouncilareasandgreatbritainconstituentcountries2004to2019)
-was collected for the 2016-2019 period for English, Scottish and Welsh
-local authorities.
+was collected and cleaned for the 2016-2019 period for English, Scottish
+and Welsh local authorities.
 
 **Geography: Local authorities (called ltla for Lower Tier Local
 Authorities)**
@@ -238,24 +240,117 @@ introduced.
       )
 
     balance_table <- rbind(half_year_averages, overall_averages)
-    balance_table
 
-    ## # A tibble: 9 × 6
-    ##   half_year_group Number_LAs Avg_Children_Low_Income Avg_Unemployment
-    ##   <chr>                <int>                   <dbl>            <dbl>
-    ## 1 2015 H2                  3                    17.1             6.47
-    ## 2 2016 H1                 12                    16.6             5.07
-    ## 3 2016 H2                 17                    16.7             5.34
-    ## 4 2017 H1                 17                    20.0             5.92
-    ## 5 2017 H2                 78                    17.7             5.54
-    ## 6 2018 H1                 67                    18.8             5.87
-    ## 7 2018 H2                160                    17.3             5.27
-    ## 8 NA H2                    5                    15.1             4.15
-    ## 9 Total                  359                    17.7             5.47
-    ## # ℹ 2 more variables: Avg_Lone_Parents <dbl>, Avg_Households <dbl>
+    kable(balance_table)
+
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 11%" />
+<col style="width: 24%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 15%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">half_year_group</th>
+<th style="text-align: right;">Number_LAs</th>
+<th style="text-align: right;">Avg_Children_Low_Income</th>
+<th style="text-align: right;">Avg_Unemployment</th>
+<th style="text-align: right;">Avg_Lone_Parents</th>
+<th style="text-align: right;">Avg_Households</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">2015 H2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">17.06450</td>
+<td style="text-align: right;">6.466667</td>
+<td style="text-align: right;">13.260210</td>
+<td style="text-align: right;">120266.67</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2016 H1</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">16.55707</td>
+<td style="text-align: right;">5.066667</td>
+<td style="text-align: right;">9.054559</td>
+<td style="text-align: right;">64225.00</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2016 H2</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">16.69050</td>
+<td style="text-align: right;">5.340000</td>
+<td style="text-align: right;">10.433683</td>
+<td style="text-align: right;">51612.50</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2017 H1</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">20.04966</td>
+<td style="text-align: right;">5.920000</td>
+<td style="text-align: right;">10.316762</td>
+<td style="text-align: right;">73541.18</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2017 H2</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">17.67697</td>
+<td style="text-align: right;">5.540513</td>
+<td style="text-align: right;">10.023235</td>
+<td style="text-align: right;">81707.69</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2018 H1</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">18.79355</td>
+<td style="text-align: right;">5.871212</td>
+<td style="text-align: right;">10.487163</td>
+<td style="text-align: right;">72548.48</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2018 H2</td>
+<td style="text-align: right;">160</td>
+<td style="text-align: right;">17.25798</td>
+<td style="text-align: right;">5.269623</td>
+<td style="text-align: right;">10.187292</td>
+<td style="text-align: right;">65804.46</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NA H2</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">15.12750</td>
+<td style="text-align: right;">4.150000</td>
+<td style="text-align: right;">8.502567</td>
+<td style="text-align: right;">88850.00</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Total</td>
+<td style="text-align: right;">359</td>
+<td style="text-align: right;">17.68620</td>
+<td style="text-align: right;">5.473023</td>
+<td style="text-align: right;">10.202662</td>
+<td style="text-align: right;">70877.21</td>
+</tr>
+</tbody>
+</table>
 
 This balance table gives strong support in favour of the consideration
 of the UC rollout as quasi-random.
+
+Hypotheses regarding the relationship between UC rollout and child
+poverty are tested using fixed-effects regression models. This section
+has given support for the consideration of UC as a quasi-randomly
+attributed treatment; it was introduced over time in certain local
+authorities and not in other comparable areas, which will serve as
+counterfactuals. The models used next in this analysis will include both
+local authority fixed-effects and time fixed-effects. Local authority
+fixed-effects allow to control for unobserved time-invariant differences
+between local authorities. Time fixed-effects control for time-varying
+but location-invariant unobserved variables.
 
 ## 3.1. Relationship Between Households on UC and Children in Low Income Families
 
@@ -316,18 +411,56 @@ There is data for a total of 339 local authorities covering 2016 to
         upper_IQR_children_low_income = quantile(children_low_income_perc, 0.75)
       )
 
-    print(summary_statistics)
+    kable(summary_statistics)
 
-    ## # A tibble: 5 × 4
-    ##    year median_children_low_income lower_IQR_children_l…¹ upper_IQR_children_l…²
-    ##   <dbl>                      <dbl>                  <dbl>                  <dbl>
-    ## 1  2016                       17.8                   14.1                   22.3
-    ## 2  2017                       18.7                   14.7                   23.1
-    ## 3  2018                       19.7                   15.1                   24.5
-    ## 4  2019                       19.6                   15.1                   24.1
-    ## 5  2020                       20.8                   16.0                   26.6
-    ## # ℹ abbreviated names: ¹​lower_IQR_children_low_income,
-    ## #   ²​upper_IQR_children_low_income
+<table>
+<colgroup>
+<col style="width: 5%" />
+<col style="width: 29%" />
+<col style="width: 32%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">year</th>
+<th style="text-align: right;">median_children_low_income</th>
+<th style="text-align: right;">lower_IQR_children_low_income</th>
+<th style="text-align: right;">upper_IQR_children_low_income</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">2016</td>
+<td style="text-align: right;">17.79700</td>
+<td style="text-align: right;">14.14269</td>
+<td style="text-align: right;">22.27804</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2017</td>
+<td style="text-align: right;">18.69802</td>
+<td style="text-align: right;">14.69106</td>
+<td style="text-align: right;">23.07687</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2018</td>
+<td style="text-align: right;">19.65107</td>
+<td style="text-align: right;">15.14832</td>
+<td style="text-align: right;">24.49871</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2019</td>
+<td style="text-align: right;">19.57602</td>
+<td style="text-align: right;">15.11710</td>
+<td style="text-align: right;">24.12560</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2020</td>
+<td style="text-align: right;">20.82423</td>
+<td style="text-align: right;">16.02553</td>
+<td style="text-align: right;">26.56084</td>
+</tr>
+</tbody>
+</table>
 
 There is a noticeable increase in the proportion of children living in
 relative low income households. The first question is: is this rise in
@@ -360,7 +493,7 @@ across local authorities (2017)**
 
     ## `geom_smooth()` using formula = 'y ~ x'
 
-![](README_files/figure-markdown_strict/unnamed-chunk-6-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-7-1.png)
 
 Figure 1 is a binned scatterplot of the proportion of households
 claiming Universal Credit (x-axis) and the proportion of children living
@@ -418,32 +551,6 @@ local authorities.*
     ## RMSE: 1.16618     Adj. R2: 0.968137
     ##                 Within R2: 0.202392
 
-    # Weird negative coefficient for unemployment, could there be an interaction?
-    fe_model_extra <- 
-      feols(data = dataset_part1, 
-            children_low_income_perc ~ 
-              unemployment_perc * UC_households_perc | ltla21_code + year,
-            cluster = ~ltla21_code)
-
-    summary(fe_model_extra)
-
-    ## OLS estimation, Dep. Var.: children_low_income_perc
-    ## Observations: 1,691 
-    ## Fixed-effects: ltla21_code: 339,  year: 5
-    ## Standard-errors: Clustered (ltla21_code) 
-    ##                                       Estimate Std. Error   t value   Pr(>|t|)
-    ## unemployment_perc                    -1.093469   0.096830 -11.29264  < 2.2e-16
-    ## UC_households_perc                   -0.305324   0.085728  -3.56153 4.2160e-04
-    ## unemployment_perc:UC_households_perc  0.093389   0.014837   6.29424 9.5849e-10
-    ##                                         
-    ## unemployment_perc                    ***
-    ## UC_households_perc                   ***
-    ## unemployment_perc:UC_households_perc ***
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## RMSE: 1.1176     Adj. R2: 0.970714
-    ##                Within R2: 0.267455
-
 The results of this first model show that for every 1 percentage point
 increase in households receiving UC, there is a 0.315 percentage point
 increase in the proportion of children living in low income families.
@@ -494,6 +601,71 @@ average number of children. For that, we need:
                 avg_0_16_pop = mean(population_0_16, na.rm = TRUE)) |> 
       mutate(est_increase_children_perc = avg_UC_households_perc_diff * 0.29,
              est_increase_children_abs = est_increase_children_perc * avg_0_16_pop / 100)
+
+    kable(yearly_estimates_df)
+
+<table style="width:100%;">
+<colgroup>
+<col style="width: 3%" />
+<col style="width: 21%" />
+<col style="width: 25%" />
+<col style="width: 9%" />
+<col style="width: 20%" />
+<col style="width: 19%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">year</th>
+<th style="text-align: right;">avg_UC_households_perc_diff</th>
+<th style="text-align: right;">avg_children_low_income_perc_diff</th>
+<th style="text-align: right;">avg_0_16_pop</th>
+<th style="text-align: right;">est_increase_children_perc</th>
+<th style="text-align: right;">est_increase_children_abs</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">2016</td>
+<td style="text-align: right;">NaN</td>
+<td style="text-align: right;">NaN</td>
+<td style="text-align: right;">33094.46</td>
+<td style="text-align: right;">NaN</td>
+<td style="text-align: right;">NaN</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2017</td>
+<td style="text-align: right;">0.8406733</td>
+<td style="text-align: right;">0.8521081</td>
+<td style="text-align: right;">33305.46</td>
+<td style="text-align: right;">0.2437952</td>
+<td style="text-align: right;">81.19713</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2018</td>
+<td style="text-align: right;">1.0419554</td>
+<td style="text-align: right;">1.0293310</td>
+<td style="text-align: right;">33525.09</td>
+<td style="text-align: right;">0.3021671</td>
+<td style="text-align: right;">101.30180</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2019</td>
+<td style="text-align: right;">3.0693953</td>
+<td style="text-align: right;">-0.0056231</td>
+<td style="text-align: right;">33569.28</td>
+<td style="text-align: right;">0.8901246</td>
+<td style="text-align: right;">298.80846</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2020</td>
+<td style="text-align: right;">3.6535895</td>
+<td style="text-align: right;">1.4256462</td>
+<td style="text-align: right;">33447.17</td>
+<td style="text-align: right;">1.0595410</td>
+<td style="text-align: right;">354.38644</td>
+</tr>
+</tbody>
+</table>
 
 ## 3.2. Adding an interaction term with duration of rollout
 
@@ -613,7 +785,7 @@ Now on with the visualisation:
         axis.text = element_text(size =11)
       )
 
-![](README_files/figure-markdown_strict/unnamed-chunk-12-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-14-1.png)
 
 ## 3.3. Impact of family type on the effect of UC rollout on child poverty
 
@@ -754,7 +926,7 @@ Now on with the visualisation:
         axis.text = element_text(size = 13)
       )
 
-![](README_files/figure-markdown_strict/unnamed-chunk-16-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-19-1.png)
 
 ## 4. Robustness and sensitivity analysis
 
@@ -775,7 +947,7 @@ First, let’s check the assumptions underlying regression analysis.
          xlab = "Observed values", ylab = "Predicted values")
     abline(0, 1)
 
-![](README_files/figure-markdown_strict/unnamed-chunk-18-1.png) This is
+![](README_files/figure-markdown_strict/unnamed-chunk-21-1.png) This is
 a scatter plot of the observed values against the predicted values from
 the final model. Ideally, if the model’s predictions are perfect, all
 points would lie on the 45-degree line where the predicted values equal
@@ -797,7 +969,7 @@ errors may not be constant across all levels of the predictors.
          xlab = "Fitted values", ylab = "Residuals")
     abline(h = 0, col = "red")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-19-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-22-1.png)
 
 This plot shows the residuals (the differences between observed and
 predicted values) plotted against the fitted (predicted) values. For
@@ -825,7 +997,7 @@ data, such as generalized least squares or robust standard errors.
     qqnorm(residuals(fe_model3))
     qqline(residuals(fe_model3), col = "red")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-20-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-23-1.png)
 
 The QQ (Quantile-Quantile) plot compares the quantiles of the observed
 residuals with the quantiles expected under a normal distribution. The
@@ -849,7 +1021,7 @@ Let’s start with a correlation matrix.
     # Plot the correlation matrix
     corrplot(cor_matrix, method = "number", type = "upper")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-21-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-24-1.png)
 
 -   UC\_households\_perc and lone\_parent\_households\_perc: The
     correlation coefficient is 0.19, indicating a weak positive
@@ -947,4 +1119,4 @@ dataset, and we can observe the distribution of the estimates.
            x = "UC_households_perc * lone_parent_households_perc",
            y = "Density")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-23-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-26-1.png)
