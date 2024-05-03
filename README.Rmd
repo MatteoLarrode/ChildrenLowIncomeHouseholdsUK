@@ -196,7 +196,7 @@ ggplot(uc_children_2017_df, aes(x = UC_households_perc, y = children_low_income_
 
 Figure 1 is a binned scatterplot of the proportion of households claiming Universal Credit (x-axis) and the proportion of children living in low income families in 2017. It suggests a strong positive relationship across local authorities. Of course, this correlation could be driven by underlying characteristics of the local authorities. (Reeves & Loopstra, 2021: 9)
 
-### Fixed-Effects Model - Continuous Independent Variable (// Reeves & Loopstra, 2021)
+### Fixed-Effects Model - Continuous Independent Variable
 
 A first baseline fixed effects (time and space) model allows to explore whether this relationship remains even after controlling for time-invariant local authority characteristics and time trends. In a second model, we add a time-varying local authority level control: unemployment rate. 
 
@@ -369,7 +369,7 @@ sd(dataset_part3$lone_parent_households_perc, na.rm = TRUE)
 
 
 ```{r}
-# Baseline with new number of years
+# Baseline with lone parents
 fe_model_baseline2 <- 
   feols(data = dataset_part3, 
         children_low_income_perc ~ 
@@ -589,55 +589,4 @@ ggplot(coefficients_df, aes(x = UC_households_perc_x_lone_parent_households_perc
   labs(title = "Density of Interaction Term from Monte Carlo Simulation",
        x = "UC_households_perc * lone_parent_households_perc",
        y = "Density")
-
-
 ```
-
-
-
-## Fixed-Effects Model - Binary Independent Variable (UC Full Service Rollout) (// Hardie, 2023)
-
-In the next model, the Universal Credit rollout is studied as a binary treatment across all local authorities. This additional analysis is critical to assess a causality link of the rollout of the policy on the proportion of children living in low income families because it allows to run placebo tests, which will be detailed later. 
-
-```{r}
-data("uc_rollout_ltla_15mo")
-data("uc_rollout_ltla_12mo")
-data("uc_rollout_ltla_6mo")
-data("children_low_income_ltla")
-
-uc_rollout_ltla_15mo_joined <- uc_rollout_ltla_15mo |> 
-  left_join(children_low_income_ltla)
-
-uc_rollout_ltla_12mo_joined <- uc_rollout_ltla_12mo |> 
-  left_join(children_low_income_ltla)
-
-uc_rollout_ltla_6mo_joined <- uc_rollout_ltla_6mo |> 
-  left_join(children_low_income_ltla)
-```
-
-```{r}
-uc_children_binary_15mo_fem <- 
-  feols(data = uc_rollout_ltla_15mo_joined, 
-        children_low_income_perc ~ uc_rolled_out | ltla21_code + year,
-        cluster = ~ltla21_code)
-
-summary(uc_children_binary_15mo_fem)
-
-uc_children_binary_12mo_fem <- 
-  feols(data = uc_rollout_ltla_12mo_joined, 
-        children_low_income_perc ~ uc_rolled_out | ltla21_code + year,
-        cluster = ~ltla21_code)
-
-summary(uc_children_binary_12mo_fem)
-
-uc_children_binary_6mo_fem <- 
-  feols(data = uc_rollout_ltla_6mo_joined, 
-        children_low_income_perc ~ uc_rolled_out | ltla21_code + year,
-        cluster = ~ltla21_code)
-
-summary(uc_children_binary_6mo_fem)
-
-```
-
-None of the models displays a statistically significant effect of the rollout of Universal Credit on the proportion of children in low income families within local authorities. The implications of this finding are difficult to flesh out because of the potential measurement issues emerging from the difference in measurement frequency between the independent variable and outcome. 
-
