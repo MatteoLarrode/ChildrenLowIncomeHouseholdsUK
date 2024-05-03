@@ -1,16 +1,13 @@
 # ==============================
 # ---- DATA VISUALISATIONS -----
 # ==============================
-
-# ---- SETUP ----
 library(tidyverse)
 library(httr2)
 library(readODS)
 library(janitor)
 library(gridExtra)
 
-# ---- LITERATURE REVIEW ----
-# Time-series data for children in relative low income
+# ---- Time-series data for children in relative low income ----
 # Source: https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2022; Table 4.14ts
 
 temp_zip_path <- tempfile(fileext = ".zip")
@@ -47,7 +44,7 @@ child_ts_AHC_raw <-
 rm(response, temp_extract_dir, temp_ods_path, temp_zip_path)
 
 # ---- Figure 1 ----
-# Children (%) in Households with Income Below 60% of the Median (Equivalised), AHC and BHC (1994-2022)
+# Children (%) in households with income below 60% of the contemporary median
 fig1_BHC <- child_ts_BHC_raw |>
   filter(x1 == "All children (per cent)") |>
   mutate(across(-x1, ~ as.numeric(as.character(.)))) |>
@@ -198,6 +195,7 @@ fig1 <- ggplot(fig1_df, aes(x = year, y = value, group = variable, color = varia
   )
 
 # ---- Figure 3 ----
+# Children in relative low income families (%) after housing costs, by family structure
 fig3_df <- child_ts_AHC_raw |>
   filter(x1 %in% c("Lone parent:", "Couple with children:")) |>
   mutate(across(-x1, ~ as.numeric(as.character(.)))) |>
@@ -294,6 +292,7 @@ fig3 <- ggplot(fig3_df, aes(x = year, y = value, group = variable, color = varia
   )
 
 # ---- Figure 2 ----
+# Eurostat child poverty indicators (2018). Countries are sorted and the United Kingdom is highlighted.
 fig2_df <- read_csv("inst/extdata/europe_child_poverty.csv") |>
   pivot_longer(cols = -Country, names_to = "Indicator", values_to = "Value") |>
   mutate(Highlight = ifelse(Country == "United Kingdom", "United Kingdom", "Other"))
@@ -383,5 +382,3 @@ fig2_plot3 <-
   )
 
 fig2 <- grid.arrange(fig2_plot1, fig2_plot2, fig2_plot3, ncol = 3)
-
-# ---- ANALYSIS ----

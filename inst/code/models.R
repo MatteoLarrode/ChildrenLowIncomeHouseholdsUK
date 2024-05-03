@@ -1,6 +1,7 @@
 # ===============================
 # ---- FIXED EFFECTS MODELS -----
 # ===============================
+library(fixest)
 
 # ---- Section 1: Continuous Independent Variable ----
 # Model 1: Baseline
