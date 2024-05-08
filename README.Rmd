@@ -501,7 +501,7 @@ ggplot(interaction_visualisation_part3, aes(x = Lone_Parents, y = Marginal_Effec
 ```
 
 
-## 4. Robustness and sensitivity analysis
+## 4. Robustness analysis
 
 ### Linear regression analysis assumptions
 

@@ -938,7 +938,7 @@ Now on with the visualisation:
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-21-1.png)
 
-## 4. Robustness and sensitivity analysis
+## 4. Robustness analysis
 
 ### Linear regression analysis assumptions
 
